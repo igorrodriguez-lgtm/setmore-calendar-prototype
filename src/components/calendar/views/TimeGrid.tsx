@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useCalendar, useVisibleDays, visibleStaffIds, type Anchor } from "../state/store";
 import { ME, services, staffById } from "../model/mock";
 import { expand } from "../model/recurrence";
@@ -11,7 +11,27 @@ import { StaffAvatar } from "../shell/StaffAvatar";
 import { useKit } from "../../kit";
 import { GoogleG } from "../shell/GoogleG";
 
-export const HOUR = 31;
+/** Setmore's hour height at 1280×800. Taller screens get taller hours (see useHourHeight). */
+const MIN_HOUR = 31;
+const MAX_HOUR = 64;
+/** Roughly how many hours should fill the visible grid on a tall screen. */
+const VISIBLE_HOURS = 14;
+const HourHeight = createContext(MIN_HOUR);
+
+/** Hour row height that grows with the grid's visible height, so big screens don't feel cramped. */
+function useHourHeight(scroller: React.RefObject<HTMLDivElement | null>) {
+  const [hour, setHour] = useState(MIN_HOUR);
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const measure = () => setHour(Math.round(Math.min(MAX_HOUR, Math.max(MIN_HOUR, el.clientHeight / VISIBLE_HOURS))));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [scroller]);
+  return hour;
+}
 const GUTTER = 44;
 const SNAP = 15;
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -42,6 +62,7 @@ export function TimeGrid() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const colsRef = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
+  const HOUR = useHourHeight(scrollRef);
 
   const columns: Column[] = useMemo(
     () => days.flatMap((date) => staffIds.map((staffId) => ({ key: `${toKey(date)}:${staffId}`, date, staffId }))),
@@ -61,7 +82,7 @@ export function TimeGrid() {
     scrollRef.current?.scrollTo({ top: Math.max(0, first) * HOUR });
     // Only when whose calendar is shown changes, not on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [staffIds.join(",")]);
+  }, [staffIds.join(","), HOUR]);
 
   // Dragging: move in 15-minute steps (and across columns), or resize from the bottom edge.
   useEffect(() => {
@@ -100,7 +121,7 @@ export function TimeGrid() {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
-  }, [drag, occurrences, columns, store]);
+  }, [drag, occurrences, columns, store, HOUR]);
 
   const shown = occurrences.map((o) => (drag?.moved && drag.key === o.key ? { ...o, ...applyDrag(o, drag, columns) } : { ...o, staffId: o.event.staffId }));
   const todayIndex = days.findIndex((d) => isSameDay(d, now));
@@ -153,6 +174,7 @@ export function TimeGrid() {
             )}
           </div>
 
+          <HourHeight.Provider value={HOUR}>
           <div ref={colsRef} className={`relative grid flex-1 ${drag?.moved ? "cursor-grabbing select-none" : ""}`} style={{ gridTemplateColumns: gridTemplate, marginTop: 12 }}>
             {columns.map((c, ci) => {
               const colOccurrences = shown.filter((o) => o.date === toKey(c.date) && o.staffId === c.staffId);
@@ -180,6 +202,7 @@ export function TimeGrid() {
               );
             })}
           </div>
+          </HourHeight.Provider>
         </div>
       </div>
     </div>
@@ -230,6 +253,7 @@ type ColumnProps = {
 };
 
 function DayColumn({ column, occurrences, isToday, showNow, nowTop, draggingKey, selectedKey, ghost, onSlot, onGrab, onOpen }: ColumnProps) {
+  const HOUR = useContext(HourHeight);
   const hours = staffById(column.staffId)?.workingHours[weekdayIndex(column.date)] ?? null;
   const ghostRef = useRef<HTMLDivElement>(null);
 
