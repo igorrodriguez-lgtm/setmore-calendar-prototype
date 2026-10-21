@@ -7,6 +7,8 @@ import { AppNav } from "./shell/AppNav";
 import { CalendarPanel } from "./shell/CalendarPanel";
 import { Header, PanelLabel } from "./shell/Header";
 import { TimeGrid } from "./views/TimeGrid";
+import { MonthView } from "./views/MonthView";
+import { AgendaView } from "./views/AgendaView";
 import { AppointmentComposer } from "./booking/AppointmentForm";
 import { AppointmentPopover } from "./booking/AppointmentPopover";
 
@@ -70,13 +72,8 @@ function Shell() {
 
 function CurrentView() {
   const { view } = useCalendar();
-  if (view === "month" || view === "agenda") {
-    return (
-      <div className="flex flex-1 items-center justify-center text-body-14 text-secondary">
-        {view === "month" ? "Month" : "Agenda"} view arrives in Stage 2.
-      </div>
-    );
-  }
+  if (view === "month") return <MonthView />;
+  if (view === "agenda") return <AgendaView />;
   return <TimeGrid />;
 }
 

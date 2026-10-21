@@ -7,7 +7,7 @@ import { useCalendar, visibleStaffIds } from "../state/store";
 import { services, staffById } from "../model/mock";
 import { expand } from "../model/recurrence";
 import { View } from "../model/types";
-import { DAY_SHORT, MONTHS, MONTH_SHORT, addDays, formatDayShort, formatRange, startOfMonth, startOfWeek, weekdayIndex } from "../model/dates";
+import { DAY_SHORT, MONTHS, MONTH_SHORT, addDays, addMonths, formatDayShort, formatRange, startOfMonth, startOfWeek, weekdayIndex } from "../model/dates";
 
 const views: { value: View; label: string; key: string; icon: IconName }[] = [
   { value: "day", label: "Day", key: "D", icon: "day" },
@@ -69,9 +69,9 @@ export function Header() {
       </>
     ) : view === "agenda" ? (
       <>
-        <span className="font-stronger">{MONTH_SHORT[anchorDate.getMonth()]}</span> <span className="text-secondary">{anchorDate.getFullYear()}</span>
+        <span className="font-stronger">{MONTH_SHORT[addMonths(anchorDate, -19).getMonth()]}</span> <span className="text-secondary">{addMonths(anchorDate, -19).getFullYear()}</span>
         {" - "}
-        <span className="font-stronger">{MONTH_SHORT[anchorDate.getMonth()]}</span> <span className="text-secondary">{anchorDate.getFullYear() + 2}</span>
+        <span className="font-stronger">{MONTH_SHORT[addMonths(anchorDate, 17).getMonth()]}</span> <span className="text-secondary">{addMonths(anchorDate, 17).getFullYear()}</span>
       </>
     ) : (
       <>
