@@ -2,7 +2,7 @@
 
 // Popovers anchored to a grid rectangle (an appointment block or a clicked slot), composed the
 // way the EDS docs describe: Popover + usePopover for placement, useClickAway for dismissal.
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loading, Popover, usePopover } from "@adaptavant/eds-core";
 import { useClickAway } from "@adaptavant/eds-core/utils";
 import type { AnchoredPopoverProps, PlaceholderProps } from "../kit/types";
@@ -31,10 +31,24 @@ export function AnchoredPopover({ anchor, onClose, placement = "right-start", wi
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
+  // usePopover flips but doesn't shift, so a popover opened low on the screen would run off the
+  // bottom. Measure the panel and raise the (invisible) anchor until the panel fits.
+  const [panelHeight, setPanelHeight] = useState(0);
+  useEffect(() => {
+    const el = panel.current;
+    if (!isOpen || !el) return;
+    const observer = new ResizeObserver(() => setPanelHeight(el.offsetHeight));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isOpen]);
+
   if (!anchor) return null;
+  const gap = 8;
+  const top = placement === "right-start" && panelHeight ? Math.max(gap, Math.min(anchor.top, window.innerHeight - panelHeight - gap)) : anchor.top;
   return (
     <>
-      <div ref={anchorRef} aria-hidden className="pointer-events-none fixed" style={{ left: anchor.left, top: anchor.top, width: anchor.width, height: anchor.height }} />
+      <div ref={anchorRef} aria-hidden className="pointer-events-none fixed" style={{ left: anchor.left, top, width: anchor.width, height: top === anchor.top ? anchor.height : 1 }} />
+      {/* Same layer EDS gives its own popovers (z-10), so pickers opened from inside stack on top. */}
       <Popover
         ref={(node: HTMLDivElement | null) => {
           panel.current = node;
@@ -46,7 +60,7 @@ export function AnchoredPopover({ anchor, onClose, placement = "right-start", wi
         aria-label={ariaLabel}
         tabIndex={-1}
         shouldUsePortal
-        className="z-40"
+        className="z-10"
       >
         {children}
       </Popover>
