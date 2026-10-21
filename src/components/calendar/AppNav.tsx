@@ -8,7 +8,6 @@ import {
   ChatIcon,
   ChevronLeft,
   ChevronRight,
-  ClockIcon,
   GearIcon,
   HelpIcon,
   ListIcon,
@@ -31,14 +30,12 @@ const items = [
 type Props = {
   isCollapsed: boolean;
   onToggle: () => void;
-  isClockedIn: boolean;
-  onClockToggle: () => void;
   onShareBookingLink: () => void;
   onNotBuilt: (feature: string) => void;
 };
 
-export function AppNav({ isCollapsed, onToggle, isClockedIn, onClockToggle, onShareBookingLink, onNotBuilt }: Props) {
-  const { Avatar, Button, IconButton } = useKit();
+export function AppNav({ isCollapsed, onToggle, onShareBookingLink, onNotBuilt }: Props) {
+  const { Avatar, IconButton } = useKit();
   const today = new Date().getDate();
 
   return (
@@ -48,7 +45,7 @@ export function AppNav({ isCollapsed, onToggle, isClockedIn, onClockToggle, onSh
       <div className={`mb-5 flex h-10 items-center ${isCollapsed ? "justify-center" : "justify-between pl-1"}`}>
         {!isCollapsed && (
           <span className="flex items-center gap-2.5 font-semibold">
-            <LogoIcon className="h-7 w-7 text-[#3d6b52]" />
+            <LogoIcon className="h-7 w-7 text-[#2f5f4a]" />
             AnywhereWorks
           </span>
         )}
@@ -94,26 +91,9 @@ export function AppNav({ isCollapsed, onToggle, isClockedIn, onClockToggle, onSh
           </button>
         )}
 
-        <div className={`mt-6 flex items-center gap-3 ${isCollapsed ? "justify-center" : "px-3"}`}>
-          <ClockIcon className="h-5 w-5 shrink-0" />
-          {!isCollapsed && (
-            <>
-              <span className="flex-1 leading-tight">
-                <span className="block text-[15px]">Time clock</span>
-                <span className="flex items-center gap-1.5 text-sm text-neutral-500">
-                  <span className={`h-1.5 w-1.5 rounded-full ${isClockedIn ? "bg-[#3d6b52]" : "bg-neutral-400"}`} />
-                  {isClockedIn ? "Clocked in" : "Clocked out"}
-                </span>
-              </span>
-              <Button variant="accentSecondary" size="small" onClick={onClockToggle}>
-                {isClockedIn ? "Clock out" : "Clock in"}
-              </Button>
-            </>
-          )}
-        </div>
+        <div className="h-6" />
 
         {[
-          { label: "Feedback", icon: NewsIcon },
           { label: "Help & Support", icon: HelpIcon },
         ].map(({ label, icon: Icon }) => (
           <button

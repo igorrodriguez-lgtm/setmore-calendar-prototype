@@ -30,6 +30,9 @@ export type TextAreaProps = { value: string; onChange: (value: string) => void; 
 
 export type SelectProps = { value: string; onChange: (value: string) => void; options: { value: string; label: string }[] };
 
+/** `value` is a local date as YYYY-MM-DD. */
+export type DatePickerProps = { value: string; onChange: (value: string) => void };
+
 export type CheckboxProps = { isChecked: boolean; onChange: (checked: boolean) => void; label: ReactNode };
 
 export type AvatarProps = { name: string; size?: "small" | "standard" };
@@ -57,6 +60,7 @@ export type Kit = {
   TextInput: ComponentType<TextInputProps>;
   TextArea: ComponentType<TextAreaProps>;
   Select: ComponentType<SelectProps>;
+  DatePicker: ComponentType<DatePickerProps>;
   Checkbox: ComponentType<CheckboxProps>;
   Avatar: ComponentType<AvatarProps>;
   Modal: ComponentType<ModalProps>;

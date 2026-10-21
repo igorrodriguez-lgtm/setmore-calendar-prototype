@@ -44,8 +44,8 @@ export type ButtonProps = {
 };
 
 const variants: Record<ButtonVariant, string> = {
-  accentPrimary: "bg-[#3d6b52] text-white hover:bg-[#335a45]",
-  accentSecondary: "bg-[#e8efe9] text-[#1f3d2c] hover:bg-[#dbe6dd]",
+  accentPrimary: "bg-neutral-900 text-white hover:bg-neutral-700",
+  accentSecondary: "bg-neutral-100 text-neutral-900 hover:bg-neutral-200",
   criticalPrimary: "bg-[#b4432f] text-white hover:bg-[#9c3a29]",
   criticalSecondary: "border border-[#b4432f] text-[#b4432f] hover:bg-[#fbecea]",
   criticalTertiary: "text-[#b4432f] hover:bg-[#fbecea]",
@@ -83,7 +83,7 @@ export function Button({
       disabled={isDisabled || isLoading}
       aria-pressed={isPressed}
       aria-busy={isLoading || undefined}
-      className={`relative inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3d6b52] disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`relative inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#171717] disabled:cursor-not-allowed disabled:opacity-40 ${
         variants[variant]
       } ${s.button} ${isPressed ? "ring-2 ring-inset ring-neutral-900/20" : ""}`}
       {...rest}
@@ -120,7 +120,7 @@ export function IconButton({
       onClick={rest.onClick}
       aria-expanded={rest["aria-expanded"]}
       aria-haspopup={rest["aria-haspopup"]}
-      className={`inline-flex shrink-0 items-center justify-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3d6b52] ${variants[variant]} ${s.square}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#171717] ${variants[variant]} ${s.square}`}
     >
       <IconComponent className={s.icon} />
     </button>

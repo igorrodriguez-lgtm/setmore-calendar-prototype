@@ -14,10 +14,10 @@ import {
   toKey,
   weekdayIndex,
 } from "./dates";
-import { VideoIcon } from "./icons";
+import { GoogleIcon, VideoIcon } from "./icons";
 
 const HOUR_HEIGHT = 58;
-const GUTTER = 60;
+const GUTTER = 84;
 const SNAP = 15;
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
@@ -42,7 +42,7 @@ export function WeekGrid({ days, now, events, selectedId, onSlotClick, onEventCl
   const columns = `${GUTTER}px repeat(${days.length}, minmax(0, 1fr))`;
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: HOUR_HEIGHT * 7.6 });
+    scrollRef.current?.scrollTo({ top: HOUR_HEIGHT * 5.6 });
   }, []);
 
   // Dragging an appointment moves it in 15-minute steps, and across days in week view.
@@ -89,24 +89,14 @@ export function WeekGrid({ days, now, events, selectedId, onSlotClick, onEventCl
         <div />
         {days.map((date, i) => {
           const isToday = i === todayIndex;
-          const count = events.filter((e) => e.date === toKey(date)).length;
+          const isWeekend = !workingHours.days.includes(weekdayIndex(date));
           return (
-            <div key={toKey(date)} className="flex h-14 min-w-0 items-center gap-2 px-3 text-neutral-800 xl:px-5">
-              <span
-                className={`flex h-10 min-w-10 items-center justify-center rounded-full text-lg font-semibold ${
-                  isToday ? "bg-[#3d6b52] text-white" : ""
-                }`}
-              >
-                {date.getDate()}
-              </span>
-              <span className={`text-lg ${isToday ? "font-semibold" : "text-neutral-600"}`}>
-                {DAY_NAMES[weekdayIndex(date)]}
-              </span>
-              {count > 0 && (
-                <span className="ml-auto whitespace-nowrap text-sm text-neutral-500">
-                  {count} {count === 1 ? "event" : "events"}
-                </span>
-              )}
+            <div
+              key={toKey(date)}
+              className={`flex h-10 min-w-0 items-center justify-center gap-1.5 text-base ${isWeekend ? "text-neutral-400" : "text-neutral-800"}`}
+            >
+              <span className={isToday ? "rounded-md bg-neutral-900 px-1 font-semibold text-white" : ""}>{date.getDate()}</span>
+              <span className={isToday ? "font-semibold" : ""}>{DAY_NAMES[weekdayIndex(date)]}</span>
             </div>
           );
         })}
@@ -121,11 +111,11 @@ export function WeekGrid({ days, now, events, selectedId, onSlotClick, onEventCl
         >
           {/* Hour labels */}
           <div className="relative">
-            <span className="absolute right-2 top-2 text-sm text-neutral-500">+ {timeZoneLabel()}</span>
+            <span className="absolute right-2 top-3 text-[11px] text-neutral-500">{timeZoneLabel()}</span>
             {HOURS.slice(1).map((hour) => (
               <span
                 key={hour}
-                className="absolute right-1.5 -translate-y-1/2 text-[15px] text-neutral-600"
+                className="absolute right-2 -translate-y-1/2 text-[11px] text-neutral-500"
                 style={{ top: hour * HOUR_HEIGHT }}
               >
                 {formatHour(hour)}
@@ -228,10 +218,10 @@ function DayColumn({
 
       {showNowLine && (
         <div
-          className={`pointer-events-none absolute inset-x-0 z-10 ${isToday ? "h-0.5 bg-neutral-900" : "h-px bg-neutral-300"}`}
+          className={`pointer-events-none absolute inset-x-0 z-10 ${isToday ? "h-0.5 bg-neutral-900" : "h-px bg-neutral-400"}`}
           style={{ top: nowTop }}
         >
-          {isToday && <span className="absolute -left-1.5 -top-[5px] h-3 w-3 rounded-full bg-neutral-900" />}
+          {isToday && <span className="absolute -left-px -top-1.5 h-3.5 w-0.5 bg-neutral-900" />}
         </div>
       )}
     </div>
@@ -255,10 +245,13 @@ function EventBlock({
 }) {
   const top = (event.start / 60) * HOUR_HEIGHT;
   const height = Math.max(((event.end - event.start) / 60) * HOUR_HEIGHT - 2, 16);
-  const width = 100 / columns;
+  // Overlapping appointments stagger like Setmore: each one shifts right and sits on top of the last.
+  const indent = columns > 1 ? Math.min(45, 70 / (columns - 1)) : 0;
+  const left = column * indent;
   const color = eventColors[event.color];
+  const isGoogle = event.source === "google";
   const roomForTime = height >= 40;
-  const time = rangeLabel(event.start, event.end);
+  const time = `${minutesToLabel(event.start)} - ${minutesToLabel(event.end)}`;
 
   return (
     <div
@@ -271,18 +264,19 @@ function EventBlock({
         e.preventDefault();
         onPointerDown(e);
       }}
-      className={`absolute cursor-pointer overflow-hidden rounded-lg border-l-[3px] px-3 text-left leading-tight transition-shadow hover:z-10 hover:shadow-md ${color.block} ${color.bar} ${color.text} ${
-        selected ? "z-10 ring-2 ring-neutral-900" : ""
-      } ${dragging ? "z-30 opacity-90 shadow-lg" : ""}`}
-      style={{ top: top + 1, height, left: `calc(${column * width}% + 4px)`, width: `calc(${width}% - 8px)` }}
+      className={`absolute cursor-pointer overflow-hidden rounded-md px-2 text-left text-[15px] leading-tight text-neutral-900 transition-shadow hover:shadow-md ${
+        isGoogle ? "border border-neutral-300 bg-white" : color.block
+      } ${selected ? "ring-2 ring-neutral-900" : ""} ${dragging ? "opacity-90 shadow-lg" : ""}`}
+      style={{ top: top + 1, height, left: `calc(${left}% + 3px)`, width: `calc(${100 - left}% - 6px)`, zIndex: selected || dragging ? 30 : column + 1 }}
       title={`${event.title} · ${time}`}
     >
-      <div className={`flex items-center gap-2 ${roomForTime ? "pt-2" : "h-full"}`}>
-        <span className="max-w-full flex-none truncate text-[17px] font-semibold">{event.title}</span>
-        {!roomForTime && <span className="min-w-0 truncate text-sm opacity-80">{time}</span>}
-        {event.video && <VideoIcon className="ml-auto h-4 w-4 shrink-0 opacity-70" />}
+      <div className={`flex items-center gap-1.5 ${roomForTime ? "pt-1.5" : "h-full"}`}>
+        <span className="min-w-0 truncate font-medium">{event.title}</span>
+        {event.video && <VideoIcon className="h-4 w-4 shrink-0" />}
+        {!roomForTime && !isGoogle && <span className="min-w-0 shrink-[3] truncate text-sm text-neutral-500">{minutesToLabel(event.start, false)}</span>}
+        {isGoogle && <GoogleIcon className="ml-auto h-4 w-4 shrink-0" />}
       </div>
-      {roomForTime && <div className="mt-0.5 truncate text-sm opacity-80">{time}</div>}
+      {roomForTime && <div className="mt-0.5 truncate text-sm text-neutral-600">{time}</div>}
     </div>
   );
 }

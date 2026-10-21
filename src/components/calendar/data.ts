@@ -3,14 +3,15 @@ import { addDays, startOfWeek, toKey } from "./dates";
 
 export type CalendarSource = "setmore" | "google";
 
-export type EventColor = "green" | "red" | "orange" | "blue";
+export type EventColor = "blue" | "teal" | "green" | "red" | "orange";
 
 /** Tailwind classes per appointment colour. Replaced by EDS tokens once eds-core is installed. */
 export const eventColors: Record<EventColor, { block: string; bar: string; text: string; dot: string }> = {
   green: { block: "bg-[#e8efe9]", bar: "border-[#3d6b52]", text: "text-[#1f3d2c]", dot: "bg-[#3d6b52]" },
   red: { block: "bg-[#fbecea]", bar: "border-[#b4432f]", text: "text-[#6e2115]", dot: "bg-[#b4432f]" },
   orange: { block: "bg-[#fdf0e6]", bar: "border-[#e08a4a]", text: "text-[#6b3510]", dot: "bg-[#e08a4a]" },
-  blue: { block: "bg-[#e9f0fb]", bar: "border-[#4a7fd1]", text: "text-[#1d3a66]", dot: "bg-[#4a7fd1]" },
+  blue: { block: "bg-[#e6efff]", bar: "border-[#6f9ef0]", text: "text-neutral-900", dot: "bg-[#6f9ef0]" },
+  teal: { block: "bg-[#e3eaec]", bar: "border-[#2f5f6b]", text: "text-neutral-900", dot: "bg-[#2f5f6b]" },
 };
 
 export type CalendarEvent = {
@@ -63,7 +64,7 @@ export const services = [
 ];
 
 /** Working hours shown on a white background; everything else is shaded. Days: 0 = Monday. */
-export const workingHours = { start: 13 * 60 + 30, end: 24 * 60, days: [0, 1, 2, 3, 4] };
+export const workingHours = { start: 8 * 60, end: 17 * 60, days: [0, 1, 2, 3, 4] };
 
 const h = (hours: number, minutes = 0) => hours * 60 + minutes;
 
@@ -71,22 +72,25 @@ const h = (hours: number, minutes = 0) => hours * 60 + minutes;
 export function seedEvents(today: Date): CalendarEvent[] {
   const monday = startOfWeek(today);
   const on = (day: number) => toKey(addDays(monday, day));
-  const seed: Omit<CalendarEvent, "id">[] = [];
-  for (let day = 0; day < 5; day++) {
-    seed.push({ title: "For Calls", date: on(day), start: h(15), end: h(16), source: "setmore", color: "green", staffId: "me" });
-    seed.push({ title: "For Tasks", date: on(day), start: h(19, 30), end: h(20, 30), source: "setmore", color: "green", staffId: "me" });
-  }
-  seed.push(
-    { title: "Alex Morgan", date: on(0), start: h(13, 30), end: h(14), source: "setmore", color: "red", video: true, customer: "Alex Morgan", staffId: "me" },
-    { title: "Priya Shah x Sam Carter", date: on(1), start: h(14, 30), end: h(15), source: "setmore", color: "green", staffId: "t2" },
-    { title: "Dana Lee", date: on(1), start: h(17, 30), end: h(18), source: "setmore", color: "orange", customer: "Dana Lee", staffId: "me" },
-    { title: "IT Interview", date: on(2), start: h(17), end: h(17, 30), source: "setmore", color: "green", video: true, staffId: "me" },
-    { title: "People & Culture sync", date: on(2), start: h(17), end: h(17, 30), source: "google", color: "green", staffId: "me" },
-    { title: "Process Trainer - Interview", date: on(2), start: h(21, 30), end: h(22, 30), source: "setmore", color: "green", video: true, customer: "Chris Ortiz", staffId: "me" },
-    { title: "CSM recruitment Discussion", date: on(3), start: h(14, 30), end: h(15), source: "google", color: "green", staffId: "me" },
-    { title: "Product demo", date: on(3), start: h(10), end: h(11), source: "setmore", color: "blue", video: true, customer: "Ivy Chen", staffId: "t13" },
-    { title: "Onboarding", date: on(7), start: h(9), end: h(9, 45), source: "setmore", color: "green", customer: "Ben Foster", staffId: "me" },
-    { title: "Follow-up", date: on(9), start: h(11), end: h(11, 15), source: "setmore", color: "orange", customer: "Nina Brooks", staffId: "me" },
-  );
+  const seed: Omit<CalendarEvent, "id">[] = [
+    { title: "Jordan Hale for Igor", date: on(0), start: h(9), end: h(9, 30), source: "google", color: "blue", staffId: "me" },
+    { title: "Igor - Weekly sync", date: on(0), start: h(9, 15), end: h(9, 45), source: "google", color: "blue", staffId: "me" },
+    { title: "Igor - Meet Jordan", date: on(0), start: h(9, 30), end: h(10), source: "google", color: "blue", staffId: "me" },
+    { title: "Igor Rodriguez 1:1", date: on(0), start: h(10), end: h(10, 30), source: "google", color: "blue", video: true, staffId: "me" },
+    { title: "Igor - Review", date: on(0), start: h(10, 15), end: h(10, 45), source: "google", color: "blue", video: true, staffId: "me" },
+    { title: "Igor Rodriguez", date: on(0), start: h(10, 30), end: h(11), source: "google", color: "blue", staffId: "me" },
+    { title: "Marketing check-in", date: on(0), start: h(10, 30), end: h(11), source: "setmore", color: "blue", video: true, customer: "Maya Patel", staffId: "me" },
+    { title: "Catch up", date: on(0), start: h(11, 30), end: h(12), source: "setmore", color: "blue", video: true, customer: "Leo Kim", staffId: "me" },
+    { title: "Learning Around Infrastructure", date: on(0), start: h(14), end: h(14, 15), source: "setmore", color: "blue", video: true, staffId: "me" },
+    { title: "LUCY - Product review", date: on(1), start: h(10), end: h(11), source: "setmore", color: "teal", video: true, customer: "Lucy Grant", staffId: "me" },
+    { title: "Design System", date: on(2), start: h(8, 15), end: h(9), source: "setmore", color: "blue", video: true, staffId: "me" },
+    { title: "Igor - Meet Jordan", date: on(4), start: h(10), end: h(10, 30), source: "setmore", color: "blue", customer: "Jordan Hale", staffId: "me" },
+    { title: "Consultation", date: on(1), start: h(13), end: h(13, 30), source: "setmore", color: "blue", customer: "Sam Carter", staffId: "t2" },
+    { title: "Product demo", date: on(3), start: h(15), end: h(16), source: "setmore", color: "teal", video: true, customer: "Ivy Chen", staffId: "t2" },
+    { title: "Follow-up", date: on(2), start: h(11), end: h(11, 15), source: "setmore", color: "blue", customer: "Nina Brooks", staffId: "t5" },
+    { title: "Onboarding", date: on(4), start: h(14), end: h(14, 45), source: "setmore", color: "blue", customer: "Ben Foster", staffId: "t5" },
+    { title: "Onboarding", date: on(7), start: h(9), end: h(9, 45), source: "setmore", color: "blue", customer: "Ben Foster", staffId: "me" },
+    { title: "Follow-up", date: on(9), start: h(11), end: h(11, 15), source: "setmore", color: "blue", customer: "Nina Brooks", staffId: "me" },
+  ];
   return seed.map((e, i) => ({ ...e, id: `e${i}` }));
 }

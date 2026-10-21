@@ -3,7 +3,7 @@
 // shadcn kit: shadcn/ui components themed with EDS colours (see globals.css), adapted to the
 // same EDS-shaped props as the EDS kit so screens can switch between them.
 import { useState, type ReactElement } from "react";
-import { Check, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button as ShadButton, type ButtonProps as ShadButtonProps } from "../shadcn/button";
 import { Input } from "../shadcn/input";
@@ -12,6 +12,9 @@ import { Label } from "../shadcn/label";
 import { Checkbox as ShadCheckbox } from "../shadcn/checkbox";
 import { Avatar as ShadAvatar, AvatarFallback } from "../shadcn/avatar";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "../shadcn/popover";
+import { Select as ShadSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
+import { Calendar } from "../shadcn/calendar";
+import { MONTHS, fromKey, toKey } from "../calendar/dates";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../shadcn/dialog";
 import { avatarTint, initials } from "../eds";
 import type {
@@ -19,6 +22,7 @@ import type {
   AvatarProps,
   ButtonProps,
   CheckboxProps,
+  DatePickerProps,
   DropdownItemProps,
   DropdownProps,
   FieldProps,
@@ -110,7 +114,7 @@ function IconButton({ icon: Icon, label, variant = "neutralTertiary", size = "st
 
 function Field({ label, description, children }: FieldProps) {
   return (
-    <div className="grid gap-2">
+    <div className="grid min-w-0 gap-2">
       <Label>{label}</Label>
       {children}
       {description && <p className="text-sm text-muted-foreground">{description}</p>}
@@ -138,27 +142,53 @@ function TextArea({ value, onChange, placeholder, rows = 3 }: TextAreaProps) {
   return <Textarea rows={rows} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />;
 }
 
-// shadcn's Select is a Radix listbox; a native select keeps this prototype light.
 function Select({ value, onChange, options }: SelectProps) {
   return (
-    <select
-      className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
+    <ShadSelect value={value} onValueChange={onChange}>
+      <SelectTrigger className="h-10">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="max-h-72">
+        {options.map((o) => (
+          <SelectItem key={o.value} value={o.value}>
+            {o.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </ShadSelect>
+  );
+}
+
+function DatePicker({ value, onChange }: DatePickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const date = fromKey(value);
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <ShadButton variant="outline" className="h-10 w-full justify-between rounded-md px-3 font-normal">
+          {MONTHS[date.getMonth()].slice(0, 3)} {date.getDate()}, {date.getFullYear()}
+          <CalendarIcon className="opacity-50" />
+        </ShadButton>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={date}
+          defaultMonth={date}
+          onSelect={(picked) => {
+            if (picked) onChange(toKey(picked));
+            setIsOpen(false);
+          }}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
 
 function Checkbox({ isChecked, onChange, label }: CheckboxProps) {
   return (
-    <label className="flex cursor-pointer items-center gap-3 text-sm">
-      <ShadCheckbox checked={isChecked} onCheckedChange={(c) => onChange(c === true)} />
+    <label className="flex min-w-0 cursor-pointer items-center gap-3 text-sm">
+      <ShadCheckbox className="h-[18px] w-[18px] rounded-[4px]" checked={isChecked} onCheckedChange={(c) => onChange(c === true)} />
       {label}
     </label>
   );
@@ -241,6 +271,7 @@ export const shadcnKit: Kit = {
   TextInput,
   TextArea,
   Select,
+  DatePicker,
   Checkbox,
   Avatar,
   Modal,

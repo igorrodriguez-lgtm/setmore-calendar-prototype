@@ -7,6 +7,7 @@ import type {
   AnchoredPopoverProps,
   AvatarProps,
   CheckboxProps,
+  DatePickerProps,
   DropdownItemProps,
   DropdownProps,
   FieldProps,
@@ -17,14 +18,16 @@ import type {
   TextInputProps,
 } from "../kit/types";
 import { Button, IconButton } from "./Button";
-import { CheckIcon, CloseIcon } from "../calendar/icons";
+import { CalendarNavIcon, CheckIcon, CloseIcon } from "../calendar/icons";
+import { MiniMonth } from "../calendar/MiniMonth";
+import { MONTHS, fromKey, toKey } from "../calendar/dates";
 
 const control =
-  "w-full rounded-xl border border-neutral-300 bg-white px-3.5 text-[15px] text-neutral-900 placeholder:text-neutral-400 hover:border-neutral-500 focus:border-[#3d6b52] focus:outline-none focus:ring-2 focus:ring-[#3d6b52]/25";
+  "w-full rounded-xl border border-neutral-300 bg-white px-3.5 text-[15px] text-neutral-900 placeholder:text-neutral-400 hover:border-neutral-500 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/25";
 
 function Field({ label, description, children }: FieldProps) {
   return (
-    <label className="flex flex-col gap-1.5">
+    <label className="flex min-w-0 flex-col gap-1.5">
       <span className="text-sm font-semibold text-neutral-800">{label}</span>
       {children}
       {description && <span className="text-sm text-neutral-500">{description}</span>}
@@ -72,14 +75,42 @@ function Select({ value, onChange, options }: SelectProps) {
   );
 }
 
+function DatePicker({ value, onChange }: DatePickerProps) {
+  const date = fromKey(value);
+  return (
+    <Dropdown
+      width={300}
+      trigger={
+        <button type="button" className={`${control} flex h-11 items-center justify-between gap-2 text-left`}>
+          <span className="truncate whitespace-nowrap">
+            {MONTHS[date.getMonth()].slice(0, 3)} {date.getDate()}, {date.getFullYear()}
+          </span>
+          <CalendarNavIcon className="h-4 w-4 shrink-0 text-neutral-500" />
+        </button>
+      }
+    >
+      {(close) => (
+        <MiniMonth
+          selected={date}
+          today={new Date()}
+          onPick={(picked) => {
+            onChange(toKey(picked));
+            close();
+          }}
+        />
+      )}
+    </Dropdown>
+  );
+}
+
 const chevron = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23525252' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`;
 
 function Checkbox({ isChecked, onChange, label }: CheckboxProps) {
   return (
-    <label className="flex cursor-pointer items-center gap-3 text-[15px] text-neutral-800">
+    <label className="flex min-w-0 cursor-pointer items-center gap-3 text-[15px] text-neutral-800">
       <input type="checkbox" className="peer sr-only" checked={isChecked} onChange={(e) => onChange(e.target.checked)} />
       <span
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-[#3d6b52]/40 ${
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-[#171717]/40 ${
           isChecked ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-400 bg-white"
         }`}
       >
@@ -218,6 +249,7 @@ export const edsKit: Kit = {
   TextInput,
   TextArea,
   Select,
+  DatePicker,
   Checkbox,
   Avatar,
   Modal,

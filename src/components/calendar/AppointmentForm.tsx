@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useKit } from "../kit";
 import { CalendarEvent, EventColor, currentUser, services, team } from "./data";
+import { minutesToLabel } from "./dates";
 
 export type Draft = Omit<CalendarEvent, "id" | "source"> & { id?: string };
 
@@ -14,20 +15,21 @@ type Props = {
 
 const durations = [15, 30, 45, 60, 90, 120];
 const colors: { value: EventColor; label: string }[] = [
-  { value: "green", label: "Green" },
   { value: "blue", label: "Blue" },
+  { value: "teal", label: "Teal" },
+  { value: "green", label: "Green" },
   { value: "orange", label: "Orange" },
   { value: "red", label: "Red" },
 ];
 
-const toTime = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
-const fromTime = (t: string) => {
-  const [h, m] = t.split(":").map(Number);
-  return (h || 0) * 60 + (m || 0);
+/** Every 15 minutes, plus the current start if it falls between steps. */
+const startTimes = (current: number) => {
+  const times = Array.from({ length: 96 }, (_, i) => i * 15);
+  return times.includes(current) ? times : [...times, current].sort((a, b) => a - b);
 };
 
 export function AppointmentForm({ draft, onClose, onSave }: Props) {
-  const { Modal, Field, TextInput, TextArea, Select, Checkbox, Button } = useKit();
+  const { Modal, Field, TextInput, TextArea, Select, DatePicker, Checkbox, Button } = useKit();
   const [form, setForm] = useState<Draft | null>(draft);
 
   useEffect(() => setForm(draft), [draft]);
@@ -72,16 +74,16 @@ export function AppointmentForm({ draft, onClose, onSave }: Props) {
       </Field>
       <div className="grid grid-cols-3 gap-3">
         <Field label="Date">
-          <TextInput type="date" value={form.date} onChange={(date) => date && set({ date })} />
+          <DatePicker value={form.date} onChange={(date) => set({ date })} />
         </Field>
         <Field label="Start">
-          <TextInput
-            type="time"
-            value={toTime(form.start)}
+          <Select
+            value={String(form.start)}
             onChange={(t) => {
-              const start = fromTime(t);
+              const start = Number(t);
               set({ start, end: Math.min(start + duration, 24 * 60) });
             }}
+            options={startTimes(form.start).map((m) => ({ value: String(m), label: minutesToLabel(m) }))}
           />
         </Field>
         <Field label="Duration">

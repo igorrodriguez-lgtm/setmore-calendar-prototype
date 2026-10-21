@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* shadcn variables, set to EDS (Setmore) styling so both kits look alike. */
+/* shadcn variables, set to EDS setmore-black styling so both kits look alike. */
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 9%;
-    --primary: 146 27% 33%;
+    --primary: 0 0% 9%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 130 15% 92%;
-    --secondary-foreground: 146 33% 18%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 9%;
     --destructive: 9 59% 45%;
     --destructive-foreground: 0 0% 100%;
     --muted: 0 0% 96%;
@@ -21,8 +21,8 @@
     --popover-foreground: 0 0% 9%;
     --border: 0 0% 90%;
     --input: 0 0% 83%;
-    --ring: 146 27% 33%;
-    --radius: 0.75rem;
+    --ring: 0 0% 9%;
+    --radius: 0.625rem;
   }
 }
 
