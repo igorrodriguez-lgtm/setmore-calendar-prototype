@@ -1,0 +1,131 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "eds",
+  "homepage": "https://earth.anywhere.co",
+  "items": [
+    {
+      "name": "theme",
+      "type": "registry:theme",
+      "title": "EDS theme (setmore-black)",
+      "description": "Earth Design System colours and radius as shadcn theme variables. Install this first; every @eds component and plain shadcn component then looks like EDS.",
+      "cssVars": {
+        "light": {
+          "background": "#ffffff",
+          "foreground": "#111111",
+          "card": "#ffffff",
+          "card-foreground": "#111111",
+          "popover": "#ffffff",
+          "popover-foreground": "#111111",
+          "primary": "#111111",
+          "primary-foreground": "#ffffff",
+          "secondary": "#f4f4f4",
+          "secondary-foreground": "#111111",
+          "muted": "#f4f4f4",
+          "muted-foreground": "#676767",
+          "accent": "#f1f1f1",
+          "accent-foreground": "#111111",
+          "destructive": "#c44c44",
+          "border": "#dbdbdb",
+          "input": "#dbdbdb",
+          "ring": "#111111",
+          "radius": "0.5rem"
+        },
+        "theme": {
+          "font-sans": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+        }
+      },
+      "docs": "Values come from the EDS setmore-black brand tokens (background-accent #111111, text-secondary #676767, border-input #dbdbdb, background-critical #c44c44). Font is Inter (EDS body and heading font); EDS apps load it from @adaptavant/eds-fonts, other apps fall back to the system sans-serif.",
+      "css": {
+        "@layer base": {
+          "body": {
+            "font-family": "var(--font-sans)"
+          }
+        }
+      }
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button and IconButton",
+      "description": "EDS Button on shadcn structure: variant accentPrimary | accentSecondary | neutralPrimary | neutralSecondary | neutralSecondaryIntense | neutralTertiary | criticalPrimary | criticalSecondary | criticalTertiary | inversePrimary, size small | standard | large | xLarge, iconStart/iconEnd, isLoading, isDisabled, isPressed.",
+      "dependencies": [
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "@eds/theme"
+      ],
+      "files": [
+        {
+          "path": "registry/eds/ui/button.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Use accentPrimary for the main action on a surface and neutralSecondary or neutralTertiary for the rest. Pass icons as components: <Button iconStart={Plus}>New</Button>. IconButton needs an aria-label."
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "EDS Tooltip API (content, placement, delay, maxWidth) with Radix Tooltip behaviour.",
+      "dependencies": [
+        "@radix-ui/react-tooltip"
+      ],
+      "registryDependencies": [
+        "utils",
+        "@eds/theme"
+      ],
+      "files": [
+        {
+          "path": "registry/eds/ui/tooltip.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Wrap one focusable element: <Tooltip content=\"Today\"><Button>Today</Button></Tooltip>. Content is plain text only."
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "title": "Dropdown menu",
+      "description": "EDS DropdownMenu parts (DropdownMenuTrigger, DropdownMenuPopover, DropdownMenuItem with railStart/railEnd, isSelected) on Radix. onClick returning false keeps it open; isOpen/onOpenChange make it controllable.",
+      "dependencies": [
+        "@radix-ui/react-dropdown-menu",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "@eds/theme"
+      ],
+      "files": [
+        {
+          "path": "registry/eds/ui/dropdown-menu.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "<DropdownMenu popoverPlacement=\"bottom-end\"><DropdownMenuTrigger><IconButton icon={MoreVertical} aria-label=\"More\" /></DropdownMenuTrigger><DropdownMenuPopover><DropdownMenuItem railEnd=\"⇧C\" onClick={copy}>Booking Page</DropdownMenuItem></DropdownMenuPopover></DropdownMenu>"
+    },
+    {
+      "name": "time-picker",
+      "type": "registry:ui",
+      "title": "Time picker",
+      "description": "EDS-only component moved into the registry. Interval, 12/24h format, min/max and a subtle variant, on Radix Popover. Controlled with value/onChange (minutes from midnight), which fixes the eds-core TimePicker limitation.",
+      "dependencies": [
+        "@radix-ui/react-popover",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "@eds/theme"
+      ],
+      "files": [
+        {
+          "path": "registry/eds/ui/time-picker.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Values are minutes from midnight: <TimePicker label=\"Start\" value={570} onChange={setStart} interval={30} />. Use variant=\"subtle\" inside dense forms."
+    }
+  ]
+}

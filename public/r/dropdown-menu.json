@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "dropdown-menu",
+  "title": "Dropdown menu",
+  "description": "EDS DropdownMenu parts (DropdownMenuTrigger, DropdownMenuPopover, DropdownMenuItem with railStart/railEnd, isSelected) on Radix. onClick returning false keeps it open; isOpen/onOpenChange make it controllable.",
+  "dependencies": [
+    "@radix-ui/react-dropdown-menu",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "utils",
+    "@eds/theme"
+  ],
+  "files": [
+    {
+      "path": "registry/eds/ui/dropdown-menu.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\nimport * as DropdownMenuPrimitive from \"@radix-ui/react-dropdown-menu\";\nimport { Check } from \"lucide-react\";\n\nimport { cn } from \"@/lib/utils\";\n\n// EDS DropdownMenu parts and props (popoverPlacement, railStart/railEnd, onClick returning\n// false keeps the menu open) with Radix behaviour. Unlike EDS, it can also be controlled\n// with isOpen / onOpenChange.\n\nconst PLACEMENT = { bottom: \"center\", \"bottom-start\": \"start\", \"bottom-end\": \"end\" } as const;\nconst MenuContext = React.createContext<{ placement: keyof typeof PLACEMENT; maxWidth: number }>({ placement: \"bottom-start\", maxWidth: 400 });\n\nexport type DropdownMenuProps = {\n  children: React.ReactNode;\n  popoverPlacement?: keyof typeof PLACEMENT;\n  popoverMaxWidth?: number;\n  isOpen?: boolean;\n  onOpenChange?: (open: boolean) => void;\n};\n\nfunction DropdownMenu({ children, popoverPlacement = \"bottom-start\", popoverMaxWidth = 400, isOpen, onOpenChange }: DropdownMenuProps) {\n  return (\n    <MenuContext.Provider value={{ placement: popoverPlacement, maxWidth: popoverMaxWidth }}>\n      <DropdownMenuPrimitive.Root open={isOpen} onOpenChange={onOpenChange} modal={false}>\n        {children}\n      </DropdownMenuPrimitive.Root>\n    </MenuContext.Provider>\n  );\n}\n\n/** Wraps your own trigger element (e.g. <IconButton>) so it opens the menu. */\nfunction DropdownMenuTrigger({ children }: { children: React.ReactElement }) {\n  return <DropdownMenuPrimitive.Trigger asChild>{children}</DropdownMenuPrimitive.Trigger>;\n}\n\nfunction DropdownMenuPopover({ children, className }: { children: React.ReactNode; className?: string }) {\n  const { placement, maxWidth } = React.useContext(MenuContext);\n  return (\n    <DropdownMenuPrimitive.Portal>\n      <DropdownMenuPrimitive.Content\n        align={PLACEMENT[placement]}\n        sideOffset={4}\n        style={{ maxWidth }}\n        className={cn(\n          \"z-50 min-w-40 overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg\",\n          \"data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95\",\n          className\n        )}\n      >\n        {children}\n      </DropdownMenuPrimitive.Content>\n    </DropdownMenuPrimitive.Portal>\n  );\n}\n\nexport type DropdownMenuItemProps = {\n  children: React.ReactNode;\n  /** Return false to keep the menu open. */\n  onClick?: () => boolean | void;\n  isDisabled?: boolean;\n  /** Shows a tick and marks the item as checked. */\n  isSelected?: boolean;\n  railStart?: React.ReactNode;\n  railEnd?: React.ReactNode;\n};\n\nfunction DropdownMenuItem({ children, onClick, isDisabled, isSelected, railStart, railEnd }: DropdownMenuItemProps) {\n  return (\n    <DropdownMenuPrimitive.Item\n      disabled={isDisabled}\n      aria-checked={isSelected}\n      onSelect={(e) => {\n        if (onClick?.() === false) e.preventDefault();\n      }}\n      className=\"relative flex cursor-default select-none items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none focus:bg-accent data-[disabled]:pointer-events-none data-[disabled]:opacity-40 [&_svg]:size-4 [&_svg]:shrink-0\"\n    >\n      {isSelected !== undefined && <span className=\"flex w-4 justify-center\">{isSelected && <Check />}</span>}\n      {railStart}\n      <span className=\"min-w-0 flex-1\">{children}</span>\n      {railEnd && <span className=\"text-xs text-muted-foreground\">{railEnd}</span>}\n    </DropdownMenuPrimitive.Item>\n  );\n}\n\nfunction DropdownMenuSeparator() {\n  return <DropdownMenuPrimitive.Separator className=\"-mx-1 my-1 h-px bg-border\" />;\n}\n\nexport { DropdownMenu, DropdownMenuTrigger, DropdownMenuPopover, DropdownMenuItem, DropdownMenuSeparator };\n",
+      "type": "registry:ui"
+    }
+  ],
+  "docs": "<DropdownMenu popoverPlacement=\"bottom-end\"><DropdownMenuTrigger><IconButton icon={MoreVertical} aria-label=\"More\" /></DropdownMenuTrigger><DropdownMenuPopover><DropdownMenuItem railEnd=\"⇧C\" onClick={copy}>Booking Page</DropdownMenuItem></DropdownMenuPopover></DropdownMenu>",
+  "type": "registry:ui"
+}

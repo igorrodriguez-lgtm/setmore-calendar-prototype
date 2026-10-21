@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "tooltip",
+  "title": "Tooltip",
+  "description": "EDS Tooltip API (content, placement, delay, maxWidth) with Radix Tooltip behaviour.",
+  "dependencies": [
+    "@radix-ui/react-tooltip"
+  ],
+  "registryDependencies": [
+    "utils",
+    "@eds/theme"
+  ],
+  "files": [
+    {
+      "path": "registry/eds/ui/tooltip.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\nimport * as TooltipPrimitive from \"@radix-ui/react-tooltip\";\n\nimport { cn } from \"@/lib/utils\";\n\n// EDS Tooltip API (content string, placement, delay) with Radix Tooltip behaviour.\nexport type TooltipProps = {\n  /** Plain text only, as in EDS. */\n  content: string;\n  placement?: \"top\" | \"right\" | \"bottom\" | \"left\";\n  /** Milliseconds before it appears. */\n  delay?: number;\n  maxWidth?: number;\n  /** The trigger: a single focusable element (Button, IconButton, link…). */\n  children: React.ReactElement;\n};\n\nfunction Tooltip({ content, placement = \"top\", delay = 300, maxWidth = 200, children }: TooltipProps) {\n  return (\n    <TooltipPrimitive.Provider delayDuration={delay}>\n      <TooltipPrimitive.Root>\n        <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>\n        <TooltipPrimitive.Portal>\n          <TooltipPrimitive.Content\n            side={placement}\n            sideOffset={6}\n            style={{ maxWidth }}\n            className={cn(\n              \"z-50 rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background\",\n              \"animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95\"\n            )}\n          >\n            {content}\n          </TooltipPrimitive.Content>\n        </TooltipPrimitive.Portal>\n      </TooltipPrimitive.Root>\n    </TooltipPrimitive.Provider>\n  );\n}\n\nexport { Tooltip };\n",
+      "type": "registry:ui"
+    }
+  ],
+  "docs": "Wrap one focusable element: <Tooltip content=\"Today\"><Button>Today</Button></Tooltip>. Content is plain text only.",
+  "type": "registry:ui"
+}

@@ -57,6 +57,10 @@ export function KitToggle() {
   return (
     <div data-print-hide className="fixed bottom-5 right-5 z-[80] flex items-center gap-1 rounded-full border border-secondary bg-canvas p-1 text-body-12 shadow-30">
       <span className="px-2 text-secondary">Built with</span>
+      <a href="/registry" className="mr-1 rounded-full px-3 py-1 font-strong text-primary hover:bg-neutral-hover focus-visible:focus-ring" title="EDS as a shadcn registry">
+        Registry proof of concept →
+      </a>
+      <span aria-hidden className="h-4 w-px bg-tertiary" />
       {(Object.keys(kits) as KitName[]).map((name) => (
         <button
           key={name}
