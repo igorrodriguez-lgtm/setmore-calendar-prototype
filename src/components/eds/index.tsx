@@ -1,7 +1,7 @@
 "use client";
 
-// EDS kit: the real @adaptavant/eds-core components. Only AnchoredPopover and Placeholder are
-// local, and both are composed from EDS parts (see anchored-popover.tsx).
+// EDS kit: the real @adaptavant/eds-core components. AnchoredPopover, Placeholder and Snackbar
+// are local wrappers composed from EDS parts (see anchored-popover.tsx and snackbar.tsx).
 import {
   AlertModal,
   Avatar,
@@ -34,7 +34,6 @@ import {
   SelectMenuListbox,
   SelectMenuPopover,
   SelectMenuTrigger,
-  Snackbar,
   TabContent,
   TabItem,
   TabList,
@@ -48,6 +47,7 @@ import {
 import type { Kit } from "../kit/types";
 import { AnchoredPopover, Placeholder } from "./anchored-popover";
 import { edsIcons } from "./icons";
+import { Snackbar } from "./snackbar";
 
 // The kit types mirror the EDS docs; casts bridge small differences in the published typings.
 export const edsKit = {

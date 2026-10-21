@@ -21,7 +21,8 @@ A running list, updated at the end of each stage. "Live" means go.setmore.com/ca
 - **Loading states, keyboard shortcuts, small-screen layouts and the full keyboard pass** come in Stage 3. Below 730px the left menu already shrinks to icons.
 
 ### Issues found in EDS itself (worth reporting to the EDS team)
-- **`Avatar` with `status`** passes an internal `hasSymbol` prop to the DOM, which makes React warn in the console (eds-core 1.48.0, `avatar-status-badge`).
+- **`Avatar` with `status`** passes an internal `hasSymbol` prop to the DOM, which makes React warn in the console (eds-core 1.48.0, `avatar-status-badge`). Workaround: the prototype uses `Avatar` without `status` and draws the dot itself with the EDS status colour.
+- **`Snackbar`** sets its position with kebab-case style keys (`'inset-inline-start'`, `'inset-inline-end'`) for every placement, which makes React warn. Workaround: the prototype renders EDS `SnackbarContent` and positions and auto-closes it itself.
 - **The EDS Tailwind preset turns every `text-[…]` class into a colour**, even `text-[length:10px]`. Setmore's grid needs 9px and 11px text, which isn't on EDS's type scale (body-8/10/12…), so the prototype adds an `fs-*` font-size utility.
 - **The EDS preset and shadcn's Tailwind theme use the same class names** (`bg-primary`, `bg-accent`, `border-input`, `text-secondary`…) with different meanings. The prototype keeps them apart with two Tailwind configs; shadcn's is scoped to `html[data-kit="shadcn"]`.
 - **`usePopover` doesn't follow scrolling ancestors** (`ancestorScroll: false`). A popover anchored inside the scrolling grid won't move with it.
