@@ -1,32 +1,26 @@
+import { tokens } from "@adaptavant/eds-brands/setmore-black";
+import { createPreset } from "@adaptavant/eds-core/tailwind";
 import type { Config } from "tailwindcss";
-import animate from "tailwindcss-animate";
+import plugin from "tailwindcss/plugin";
 
+// EDS styles for the app and the EDS kit. shadcn components get their own config
+// (tailwind.shadcn.config.ts) because the EDS preset replaces Tailwind's theme.
 const config: Config = {
-  content: ["./src/**/*.{ts,tsx}"],
-  theme: {
-    extend: {
-      // shadcn theme, mapped to EDS-styled CSS variables in globals.css
-      colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
-        secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
-        destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
-        muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
-        accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
-        popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-    },
-  },
-  plugins: [animate],
+  presets: [createPreset(tokens)],
+  content: [
+    "./node_modules/@adaptavant/eds-core/dist/**/*.{js,ts,jsx,tsx}",
+    "./src/app/**/*.{ts,tsx}",
+    "./src/components/calendar/**/*.{ts,tsx}",
+    "./src/components/eds/**/*.{ts,tsx}",
+    "./src/components/kit/*.{ts,tsx}",
+  ],
+  plugins: [
+    // The EDS preset maps every text-[…] class to a colour, and its type scale stops at 8/10/12px.
+    // Setmore's calendar grid uses 9 and 11px, so dense grid text uses fs-* instead.
+    plugin(({ matchUtilities }) => {
+      matchUtilities({ fs: (value) => ({ fontSize: value }) }, { values: { 8: "8px", 9: "9px", 10: "10px", 11: "11px", 12: "12px", 13: "13px", 15: "15px" } });
+    }),
+  ],
 };
 
 export default config;

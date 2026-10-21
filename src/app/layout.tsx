@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import "./shadcn.css";
+import { EdsProvider } from "./eds-provider";
 
 export const metadata: Metadata = {
-  title: "Setmore Calendar Prototype",
-  description: "Testing a rebuild of the Setmore calendar with EDS",
+  title: "Igor's Calendar",
+  description: "Prototype rebuild of the Setmore calendar with EDS and shadcn",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased text-neutral-900`}>{children}</body>
+      <body className="bg-canvas text-primary antialiased">
+        <EdsProvider>{children}</EdsProvider>
+      </body>
     </html>
   );
 }

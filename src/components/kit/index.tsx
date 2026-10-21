@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { edsKit } from "../eds";
 import { shadcnKit } from "./shadcn";
+import { Toaster } from "../shadcn/sonner";
 import type { Kit } from "./types";
 
 const kits = { eds: edsKit, shadcn: shadcnKit };
@@ -25,6 +26,11 @@ export function KitProvider({ children }: { children: ReactNode }) {
     if (initial === "eds" || initial === "shadcn") setName(initial);
   }, []);
 
+  // shadcn styles are scoped to html[data-kit="shadcn"] (see tailwind.shadcn.config.ts).
+  useEffect(() => {
+    document.documentElement.dataset.kit = name;
+  }, [name]);
+
   const setKit = (next: KitName) => {
     setName(next);
     try {
@@ -32,7 +38,12 @@ export function KitProvider({ children }: { children: ReactNode }) {
     } catch {}
   };
 
-  return <KitContext.Provider value={{ kit: kits[name], setKit }}>{children}</KitContext.Provider>;
+  return (
+    <KitContext.Provider value={{ kit: kits[name], setKit }}>
+      {children}
+      {name === "shadcn" && <Toaster position="bottom-left" />}
+    </KitContext.Provider>
+  );
 }
 
 /** The active kit's building blocks: `const { Button, Modal } = useKit();` */
@@ -44,16 +55,16 @@ export function useKit() {
 export function KitToggle() {
   const { kit, setKit } = useContext(KitContext);
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-1 rounded-full border border-neutral-200 bg-white p-1 text-sm shadow-lg">
-      <span className="px-2 text-neutral-500">Built with</span>
+    <div data-print-hide className="fixed bottom-5 right-5 z-[80] flex items-center gap-1 rounded-full border border-secondary bg-canvas p-1 text-body-12 shadow-30">
+      <span className="px-2 text-secondary">Built with</span>
       {(Object.keys(kits) as KitName[]).map((name) => (
         <button
           key={name}
           type="button"
           onClick={() => setKit(name)}
           aria-pressed={kit.name === name}
-          className={`rounded-full px-3 py-1.5 font-medium transition-colors ${
-            kit.name === name ? "bg-neutral-900 text-white" : "text-neutral-700 hover:bg-neutral-100"
+          className={`rounded-full px-3 py-1 font-strong transition-colors ${
+            kit.name === name ? "bg-inverse text-onPrimary" : "text-primary hover:bg-neutral-hover"
           }`}
         >
           {kits[name].label}
