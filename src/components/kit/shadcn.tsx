@@ -2,6 +2,7 @@
 
 // shadcn kit: shadcn/ui components themed with EDS colours (see globals.css), adapted to the
 // same EDS-shaped props as the EDS kit so screens can switch between them.
+// Files in ../shadcn come straight from the shadcn CLI and stay unedited; EDS styling goes here.
 import { useState, type ReactElement } from "react";
 import { Calendar as CalendarIcon, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -76,7 +77,7 @@ function Button({
       size={s.size}
       disabled={isDisabled || isLoading}
       aria-pressed={isPressed}
-      className={cn("relative", v.className, s.className, isPressed && "bg-accent")}
+      className={cn("relative rounded-full", v.className, s.className, isPressed && "bg-accent")}
       {...rest}
     >
       <span className={cn("inline-flex items-center gap-2", isLoading && "invisible")}>
@@ -104,7 +105,7 @@ function IconButton({ icon: Icon, label, variant = "neutralTertiary", size = "st
       title={label}
       disabled={isDisabled}
       onClick={onClick}
-      className={cn(v.className, sizeMap[size].icon, "[&_svg]:size-5")}
+      className={cn("rounded-full", v.className, sizeMap[size].icon, "[&_svg]:size-5")}
       {...rest}
     >
       <Icon />
@@ -173,6 +174,7 @@ function DatePicker({ value, onChange }: DatePickerProps) {
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
+          weekStartsOn={1}
           selected={date}
           defaultMonth={date}
           onSelect={(picked) => {
