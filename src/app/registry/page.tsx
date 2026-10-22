@@ -5,7 +5,8 @@ import { Button, ClipboardCopyIcon, Heading, NewWindowIcon, Text } from "@adapta
 
 type Item = { name: string; type: string; title?: string; description?: string; dependencies?: string[] };
 
-const DEMO_URL = "http://localhost:3001";
+// The separate demo app: local while developing, its hosted URL when deployed.
+const DEMO_URL = process.env.NEXT_PUBLIC_DEMO_URL ?? "http://localhost:3001";
 
 /** Built by `npx shadcn build` from registry.json into public/r. */
 function useRegistry() {
