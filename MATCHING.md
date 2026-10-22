@@ -39,3 +39,22 @@ A running list, updated at the end of each stage. "Live" means go.setmore.com/ca
 
 ### Known differences
 - **Agenda only lists the selected person's appointments.** Live also shows events where you're a guest on someone else's calendar, and the prototype has no guest-of-staff data.
+
+## Test mode (Thani's Earth shadcn registry)
+
+Source: https://earth-ds-registry.vercel.app/r/registry.json (`eds-base` + `setmore-black`), copied into `src/components/test-ui/`.
+
+### From the registry
+Button (also used for IconButton), Input (TextInput, SearchInput), Textarea, Checkbox, Field (Field, InlineField), Select (the repeat menu and the time pickers). RadioGroup is copied in too, but the calendar has no radio buttons.
+
+### Fallen back to stock shadcn (coloured by the Test theme)
+Dialog (Modal), AlertDialog (delete confirm), Popover (appointment popup, date picker), DropdownMenu (header menus, ⋮), Tooltip, Tabs, Switch (Hide weekends), Calendar, Avatar, Command (service, class and guest pickers), Sonner (messages), Skeleton (loading). The colour swatches are custom radio buttons.
+
+### Registry issues to feed back
+- **Tailwind v4 only.** It uses the `cssVars.theme` block and v4 classes: `max-h-(--available-height)`, `w-(--anchor-width)`, `outline-hidden`, `field-sizing-content`, bare `data-checked:` / `data-open:` / `aria-invalid:`, `has-data-*`, `in-data-*`, `not-data-*`, `*:data-*`, `@container` / `@md/`. EDS apps are on Tailwind v3 (the EDS preset requires it), so they can't install it with `shadcn add`; everything was rewritten by hand.
+- **Imports `cn` from an npm package called `cn`**, listed as a dependency. shadcn components normally import a local `@/lib/utils`. Installing an unvetted third-party package for a one-line helper is a supply-chain risk.
+- **Built on Base UI.** A project set up with a Radix style (`radix-*`) gets mixed foundations. The registry should say which foundation it expects.
+- **`field.tsx` imports `@/components/ui/label` and `separator`** from the default shadcn registry, without listing which style they must come from.
+- **The theme changes `text-sm` to 12px app-wide**, which shrinks every `text-sm` in a host app, not just EDS components.
+- **Button variants use shadcn names** (default, outline, ghost, destructive), not EDS names (accentPrimary, neutralSecondary, criticalPrimary…), so existing EDS screens need a mapping. `destructive` is a light red tint rather than EDS's solid critical button.
+- **Only 7 components.** Dialogs, menus, popovers, tooltips and tabs fall back to stock shadcn, which uses 4px (`rounded-md`) corners where EDS menus use 12px.
