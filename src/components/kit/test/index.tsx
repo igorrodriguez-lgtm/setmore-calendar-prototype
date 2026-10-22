@@ -165,7 +165,7 @@ const Field = (props: FieldProps) => <FieldShell {...props} subtle={false} />;
 const InlineField = (props: FieldProps) => <FieldShell {...props} subtle />;
 
 /** Undo the registry inputs' own focus ring in favour of EDS's border focus. */
-const registryInputReset = "focus-visible:ring-0 focus-visible:ring-offset-0";
+const registryInputReset = "focus-visible:ring-0 focus-visible:ring-offset-0 aria-[invalid=true]:ring-0 data-[placeholder]:text-[color:var(--text-primary)]";
 
 function TextInput({ value, onChange, placeholder, type = "text", autoFocus, adornmentStart, adornmentEnd, onKeyDown, onFocus, onBlur }: TextInputProps) {
   const field = useContext(FieldContext);
