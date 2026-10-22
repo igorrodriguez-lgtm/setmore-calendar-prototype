@@ -13,7 +13,7 @@
 // The data below is a self-contained mock of the Fri 2 Oct 2026 anchor used throughout the design
 // boards. The rest of the prototype's state is intentionally not shared: New mode is isolated.
 
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   ChevronDown,
@@ -114,11 +114,16 @@ const WORK_DAYS = [0, 1, 2, 3, 4]; // Mon–Fri
 
 // ---------- Primitives ----------------------------------------------------------
 
-// Grid math: hour row height, grid origin, event positioning.
+// Grid math: hour row height. The grid covers all 24 hours but opens scrolled to the working
+// hours (8AM–5PM here) so earlier/later meetings are still reachable by scrolling.
 const HOUR = 80;
-const DAY_START = 8;
-const DAY_END = 19;
+const DAY_START = 0;
+const DAY_END = 24;
+const WORK_START = 8;
+const WORK_END = 17;
 const GRID_HEIGHT = (DAY_END - DAY_START) * HOUR;
+// Scroll target: 1 hour before the working day, as the spec asks.
+const INITIAL_SCROLL = (WORK_START - 1) * HOUR;
 
 // Tree-mark logo for AnywhereWorks (built inline — the design is a stylised pine).
 function AWMark({ className }: { className?: string }) {
@@ -128,6 +133,29 @@ function AWMark({ className }: { className?: string }) {
       <path d="M8 13v2" />
     </svg>
   );
+}
+
+// Clock-face icon for the Time clock row (a plain outline clock, matches EDS's ClockIcon shape).
+function ClockFace({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden className={className} fill="none" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 5v3l2 1.5" />
+    </svg>
+  );
+}
+
+/** Collapses the sidebar below `px` so the week keeps breathing room on narrow laptops / tablets. */
+function useNarrow(px: number) {
+  const [narrow, setNarrow] = useState(false);
+  useLayoutEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${px - 1}px)`);
+    const update = () => setNarrow(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, [px]);
+  return narrow;
 }
 
 // A multicoloured dot row for the Calendars chip. Shows 3 overlapping dots.
@@ -212,7 +240,10 @@ function EventCard({ ev, onOpen }: { ev: EventInput; onOpen: (id: string) => voi
   const endDate = useMemo(() => timeOn(dayDate(ev.day), ev.end), [ev]);
   const duration = ev.end - ev.start;
   const top = (ev.start - DAY_START * 60) * (HOUR / 60);
-  const height = duration * (HOUR / 60);
+  // Minimum card height so the title stays visible on short events (15-minute cards too).
+  const height = Math.max(duration * (HOUR / 60) - 2, 18);
+  // 15-min cards: title only. 30-min: title + time · person. 45+: title + range + optional avatars.
+  const veryShort = duration <= 15;
   const short = duration < 60;
   const isLive = ev.day === TODAY_IDX && ev.start <= NOW_MINUTES && ev.end > NOW_MINUTES;
   const soon = ev.day === TODAY_IDX && ev.start > NOW_MINUTES && ev.start - NOW_MINUTES <= 15;
@@ -243,24 +274,26 @@ function EventCard({ ev, onOpen }: { ev: EventInput; onOpen: (id: string) => voi
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
             bgClass,
           )}
-          style={{ top, height: Math.max(height - 2, 18) }}
+          style={{ top, height }}
         >
           <span aria-hidden className={cn("absolute inset-y-0 left-0 w-[3px]", barClass)} />
-          <span className="flex flex-col gap-0.5 py-1.5 pl-[11px] pr-2">
+          <span className={cn("flex flex-col gap-0.5 pl-[11px] pr-2", veryShort ? "py-0 justify-center h-full" : short ? "py-1" : "py-1.5")}>
             <span className="flex items-center gap-1 min-w-0">
-              {isMinePrivate && <span aria-label="Private" className="inline-grid place-items-center">🔒</span>}
+              {isMinePrivate && <span aria-label="Private" className="inline-grid place-items-center text-[10px]">🔒</span>}
               <span className="truncate text-sm font-medium leading-tight">{ev.title}</span>
               {(isLive || soon) && ev.meet ? (
                 <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full border border-pal-green-border bg-background px-1.5 py-[1px] text-[11px] font-medium text-pal-green-text">
                   <Video className="h-3 w-3" /> Join
                 </span>
-              ) : ev.meet ? (
-                <Video className="h-[14px] w-[14px] shrink-0 opacity-80" aria-hidden />
+              ) : ev.meet && !veryShort ? (
+                <Video className="h-[14px] w-[14px] shrink-0 opacity-80 ml-auto" aria-hidden />
               ) : null}
             </span>
-            {!short && (
+            {!veryShort && (
               <span className="text-xs opacity-80 truncate">
-                {renderRange(startDate, endDate)}
+                {short && duration <= 30
+                  ? <>{renderTime(startDate, { hourOnly: true })} · {PEOPLE[ev.guests.find((g) => g !== "ml") ?? ev.guests[0]].first}</>
+                  : renderRange(startDate, endDate)}
               </span>
             )}
             {duration >= 60 && others.length > 0 && (
@@ -276,11 +309,6 @@ function EventCard({ ev, onOpen }: { ev: EventInput; onOpen: (id: string) => voi
                   {others.slice(0, 2).map((g) => PEOPLE[g].first).join(", ")}
                   {others.length > 2 ? ` +${others.length - 2}` : ""}
                 </span>
-              </span>
-            )}
-            {short && duration <= 30 && (
-              <span className="text-xs opacity-80 truncate">
-                {renderTime(startDate, { hourOnly: true })} · {PEOPLE[ev.guests[0]].first}
               </span>
             )}
           </span>
@@ -359,7 +387,27 @@ const NAV: { icon: React.ElementType; label: string; current?: boolean; badge?: 
   { icon: SettingsIcon, label: "Settings" },
 ];
 
-function NewSidebar() {
+function NewSidebar({ collapsed }: { collapsed: boolean }) {
+  if (collapsed) {
+    // Icons-only rail: keeps the same information architecture on narrow screens.
+    return (
+      <nav aria-label="Primary" className="flex w-rail shrink-0 flex-col items-center border-r border-line bg-background py-3 gap-1">
+        <span className="mb-3 grid h-7 w-7 place-items-center text-[#1B3D32]"><AWMark className="h-6 w-6" /></span>
+        {NAV.map(({ icon: Icon, label, current }) => (
+          <GhostIcon key={label} label={label}>
+            <Icon className={cn("h-4 w-4", current && "text-primary")} />
+          </GhostIcon>
+        ))}
+        <div className="mt-auto" />
+        <GhostIcon label="Clock in"><ClockFace className="h-4 w-4" /></GhostIcon>
+        <GhostIcon label="Help & Support"><LifeBuoy className="h-4 w-4" /></GhostIcon>
+        <span className="relative mt-1">
+          <Initials person="ml" size={28} />
+          <span aria-hidden className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-status-available" />
+        </span>
+      </nav>
+    );
+  }
   return (
     <nav aria-label="Primary" className="flex w-nav shrink-0 flex-col border-r border-line bg-background">
       <div className="flex h-[64px] items-center gap-2 px-4">
@@ -386,26 +434,28 @@ function NewSidebar() {
         ))}
       </div>
       <div className="flex flex-col gap-1 px-3 py-3">
-        <div className="flex items-center gap-2 rounded-md px-3 py-2 text-sm">
-          <span className="relative inline-grid h-4 w-4 place-items-center text-foreground/70">⏱</span>
-          <span className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm">
+          <ClockFace className="h-4 w-4 shrink-0 text-foreground/70" />
+          <span className="flex min-w-0 flex-1 flex-col leading-tight">
             <span className="text-sm">Time clock</span>
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-status-offline" /> Clocked out
             </span>
           </span>
-          <Button variant="secondary" size="sm" className="h-7 rounded-full px-3 text-sm">Clock in</Button>
+          <Button variant="secondary" size="sm" className="h-7 shrink-0 rounded-full px-3 text-sm">
+            Clock in
+          </Button>
         </div>
         <a href="#" className="flex h-10 items-center gap-3 rounded-md px-3 text-sm hover:bg-accent">
           <LifeBuoy className="h-4 w-4 opacity-80" />
           Help & Support
         </a>
         <div className="mt-1 flex items-center gap-3 rounded-md px-3 py-2">
-          <span className="relative">
+          <span className="relative shrink-0">
             <Initials person="ml" size={32} />
             <span aria-hidden className="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-background bg-status-available" />
           </span>
-          <span className="flex min-w-0 flex-col">
+          <span className="flex min-w-0 flex-col leading-tight">
             <span className="truncate text-sm font-medium">Marine Lasserre</span>
             <span className="truncate text-xs text-muted-foreground">Available</span>
           </span>
@@ -417,10 +467,10 @@ function NewSidebar() {
 
 // ---------- Toolbar + grid ------------------------------------------------------
 
-function NewToolbar() {
+function NewToolbar({ compact }: { compact: boolean }) {
   const [open, setOpen] = useState(false);
   return (
-    <header className="flex h-toolbar items-center gap-2 border-b border-line bg-background px-5">
+    <header className="flex h-toolbar items-center gap-2 border-b border-line bg-background px-4 lg:px-5">
       <Button variant="ghost" className="h-8 rounded-md px-3 text-sm">Today</Button>
       <GhostIcon label="Previous week"><ChevronLeft className="h-4 w-4" /></GhostIcon>
       <GhostIcon label="Next week"><ChevronRight className="h-4 w-4" /></GhostIcon>
@@ -442,11 +492,11 @@ function NewToolbar() {
       <div className="ml-auto flex items-center gap-2">
         <Button variant="outline" className="h-8 rounded-full border-border px-3 text-sm">
           <CalendarsSwatch className="mr-1" />
-          Calendars
+          {!compact && "Calendars"}
           <ChevronDown className="h-3.5 w-3.5 text-foreground/60" />
         </Button>
         <Button className="h-8 rounded-full px-4 text-sm">
-          <Plus className="h-4 w-4" /> New
+          <Plus className="h-4 w-4" /> {!compact && "New"}
         </Button>
         <GhostIcon label="More options" className="rounded-full border border-border">
           <MoreHorizontal className="h-4 w-4" />
@@ -461,26 +511,33 @@ function NewWorkWeek() {
   const nowY = (NOW_MINUTES - DAY_START * 60) * (HOUR / 60);
   const dayCols = WORK_DAYS;
   const selectedEvent = EVENTS.find((e) => e.id === selected);
+  // Open scrolled to the working hours. The full 24h grid stays reachable by scrolling.
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = INITIAL_SCROLL;
+  }, []);
 
   return (
     <div className="flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Day header row */}
+        {/* Day header row — sticky above the scroll area so day labels never leave the viewport. */}
         <div className="flex border-b border-line">
-          <div className="flex h-dayhead w-[60px] shrink-0 items-center justify-end pr-2 text-xs text-muted-foreground">
-            + {/* add-time-zone affordance */}EDT
+          <div className="flex h-dayhead w-gutter shrink-0 items-center justify-end gap-1 border-r border-line pr-3 text-xs text-muted-foreground">
+            {/* "+ EDT" on one line (add a time zone + the current label). */}
+            <span aria-hidden className="opacity-70">+</span>
+            <span>EDT</span>
           </div>
           {dayCols.map((d) => (
-            <div key={d} className="min-w-0 flex-1">
+            <div key={d} className="min-w-0 flex-1 border-l border-line first:border-l-0">
               <DayHeading date={dayDate(d)} isToday={d === TODAY_IDX} />
             </div>
           ))}
         </div>
-        {/* Scrollable grid */}
-        <div className="flex flex-1 overflow-y-auto">
+        {/* Scrollable grid (24h, opens at 7AM) */}
+        <div ref={scrollRef} className="flex min-h-0 flex-1 overflow-y-auto">
           <div className="flex min-w-0 flex-1" style={{ height: GRID_HEIGHT }}>
             {/* Hour column */}
-            <div className="relative w-[60px] shrink-0 border-r border-line">
+            <div className="relative w-gutter shrink-0 border-r border-line">
               {Array.from({ length: DAY_END - DAY_START + 1 }, (_, i) => {
                 const hour = DAY_START + i;
                 const d = new Date(MONDAY);
@@ -493,7 +550,7 @@ function NewWorkWeek() {
                   </div>
                 );
               })}
-              {/* Current time pill */}
+              {/* Current time pill, aligned right in the hour gutter */}
               <div
                 className="absolute right-1 flex h-5 items-center rounded-md bg-foreground px-1.5 text-[11px] font-semibold text-background"
                 style={{ top: nowY - 10 }}
@@ -501,31 +558,45 @@ function NewWorkWeek() {
                 9:34
               </div>
             </div>
-            {/* Day columns */}
-            {dayCols.map((d) => (
-              <div key={d} className="relative min-w-0 flex-1 border-r border-line last:border-r-0">
-                {/* Hour lines */}
-                {Array.from({ length: DAY_END - DAY_START }, (_, i) => (
-                  <div
-                    key={i}
-                    className="absolute left-0 right-0 border-t border-line"
-                    style={{ top: (i + 1) * HOUR }}
-                  />
-                ))}
-                {/* Current time line on today */}
-                {d === TODAY_IDX && (
-                  <>
-                    <div className="absolute left-0 right-0 h-[2px] bg-foreground" style={{ top: nowY }}>
+            {/* Day columns. Non-working hours and off-days are tinted so working time stands out. */}
+            {dayCols.map((d) => {
+              const isWorkDay = WORK_DAYS.includes(d);
+              return (
+                <div key={d} className="relative min-w-0 flex-1 border-l border-line first:border-l-0">
+                  {/* Non-work tint: full column for days off, top & bottom bands for working days.
+                      Uses --background-canvas-secondary so it keeps a very subtle hue. */}
+                  {/* Non-work tint. Uses --background-canvas-secondary (#fafafa) so day/time
+                      dividers stay visible on top; off-days get the same tint across the full column. */}
+                  {!isWorkDay && (
+                    <div aria-hidden className="absolute inset-0 bg-canvas-secondary" />
+                  )}
+                  {isWorkDay && (
+                    <>
+                      <div aria-hidden className="absolute left-0 right-0 top-0 bg-canvas-secondary" style={{ height: WORK_START * HOUR }} />
+                      <div aria-hidden className="absolute left-0 right-0 bg-canvas-secondary" style={{ top: WORK_END * HOUR, bottom: 0 }} />
+                    </>
+                  )}
+                  {/* Hour lines */}
+                  {Array.from({ length: DAY_END - DAY_START }, (_, i) => (
+                    <div
+                      key={i}
+                      className="absolute left-0 right-0 border-t border-line"
+                      style={{ top: (i + 1) * HOUR }}
+                    />
+                  ))}
+                  {/* Current time line on today */}
+                  {d === TODAY_IDX && (
+                    <div className="absolute left-0 right-0 h-[2px] bg-foreground z-10" style={{ top: nowY }}>
                       <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-foreground" />
                     </div>
-                  </>
-                )}
-                {/* Events */}
-                {EVENTS.filter((e) => e.day === d).map((ev) => (
-                  <EventCard key={ev.id} ev={ev} onOpen={(id) => setSelected(id)} />
-                ))}
-              </div>
-            ))}
+                  )}
+                  {/* Events */}
+                  {EVENTS.filter((e) => e.day === d).map((ev) => (
+                    <EventCard key={ev.id} ev={ev} onOpen={(id) => setSelected(id)} />
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -555,12 +626,14 @@ function NewWorkWeek() {
 // ---------- App shell -----------------------------------------------------------
 
 export function NewCalendarApp() {
+  // The sidebar collapses to icons under 1024px (laptop/tablet). Day columns always share the rest.
+  const collapsed = useNarrow(1024);
   return (
     <TooltipProvider delayDuration={350}>
       <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
-        <NewSidebar />
+        <NewSidebar collapsed={collapsed} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <NewToolbar />
+          <NewToolbar compact={collapsed} />
           <NewWorkWeek />
         </div>
       </div>

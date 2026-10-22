@@ -93,7 +93,7 @@ const config: Config = {
         popover: { DEFAULT: v("popover"), foreground: v("popover-foreground") },
         card: { DEFAULT: v("card"), foreground: v("card-foreground") },
         // EDS semantic tokens used directly by the calendar.
-        canvas: { DEFAULT: v("background-canvas"), secondary: v("background-canvas-secondary") },
+        canvas: { DEFAULT: v("background-canvas"), secondary: v("background-canvas-secondary"), tertiary: v("background-canvas-tertiary") },
         hover: v("background-neutral-hover"),
         pressed: v("background-neutral-pressed"),
         inverse: { DEFAULT: v("background-inverse"), foreground: v("text-inverse") },
