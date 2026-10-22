@@ -1,0 +1,31 @@
+@config "../../tailwind.test.config.ts";
+
+@tailwind components;
+@tailwind utilities;
+
+/* setmore-black theme (light) and eds-base structure from Thani's registry, active in Test mode only. */
+html[data-kit="test"] {
+  --radius: 8px;
+  --radius-md: 4px;
+  --background: #ffffff;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f4;
+  --secondary-foreground: #111111;
+  --muted: #f4f4f4;
+  --muted-foreground: #676767;
+  --accent: #f1f1f1;
+  --accent-foreground: #111111;
+  --destructive: #c44c44;
+  --destructive-foreground: #ffffff;
+  --border: #dbdbdb;
+  --input: #dbdbdb;
+  --ring: #111111;
+  --eds-shadow-20: 0px -1px 4px 0px rgba(88, 104, 116, 0.12), 0px 4px 12px 0px rgba(88, 104, 116, 0.16);
+  --eds-shadow-30: 0px -1px 4px 0px rgba(88, 104, 116, 0.12), 0px 8px 16px 0px rgba(88, 104, 116, 0.16);
+}

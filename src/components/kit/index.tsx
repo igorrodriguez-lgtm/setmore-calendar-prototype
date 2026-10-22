@@ -3,10 +3,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { edsKit } from "../eds";
 import { shadcnKit } from "./shadcn";
+import { testKit } from "./test";
 import { Toaster } from "../shadcn/sonner";
 import type { Kit } from "./types";
 
-const kits = { eds: edsKit, shadcn: shadcnKit };
+// Toggle order: shadcn, EDS, Test.
+const kits = { shadcn: shadcnKit, eds: edsKit, test: testKit };
 type KitName = keyof typeof kits;
 const STORAGE_KEY = "calendar-prototype-kit";
 
@@ -23,10 +25,10 @@ export function KitProvider({ children }: { children: ReactNode }) {
       saved = localStorage.getItem(STORAGE_KEY);
     } catch {}
     const initial = fromUrl ?? saved;
-    if (initial === "eds" || initial === "shadcn") setName(initial);
+    if (initial === "eds" || initial === "shadcn" || initial === "test") setName(initial);
   }, []);
 
-  // shadcn styles are scoped to html[data-kit="shadcn"] (see tailwind.shadcn.config.ts).
+  // shadcn and Test styles are scoped to html[data-kit="…"] (see tailwind.shadcn.config.ts and tailwind.test.config.ts).
   useEffect(() => {
     document.documentElement.dataset.kit = name;
   }, [name]);
@@ -41,7 +43,7 @@ export function KitProvider({ children }: { children: ReactNode }) {
   return (
     <KitContext.Provider value={{ kit: kits[name], setKit }}>
       {children}
-      {name === "shadcn" && <Toaster position="bottom-left" />}
+      {name !== "eds" && <Toaster position="bottom-left" />}
     </KitContext.Provider>
   );
 }

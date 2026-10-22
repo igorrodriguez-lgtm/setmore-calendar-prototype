@@ -1,3 +1,6 @@
+/* Each stylesheet names its Tailwind config: EDS here, shadcn.css and test-kit.css use their own. */
+@config "../../tailwind.config.ts";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
