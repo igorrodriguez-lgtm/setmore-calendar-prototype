@@ -297,7 +297,7 @@ export type IconName = (typeof ICON_NAMES)[number];
 export type KitIcon = ComponentType<{ size?: "16" | "20" | "24"; className?: string; "aria-hidden"?: boolean }>;
 
 export type Kit = {
-  name: "eds" | "shadcn" | "test";
+  name: "eds" | "shadcn" | "test" | "new";
   label: string;
   icons: Record<IconName, KitIcon>;
   Button: ComponentType<ButtonProps>;

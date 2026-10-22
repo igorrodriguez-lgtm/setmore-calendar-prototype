@@ -1,0 +1,6 @@
+@config "../../tailwind.new.config.ts";
+
+/* New mode (design/new): shadcn components styled with EDS (Setmore) tokens, scoped to html[data-ds="new"]. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

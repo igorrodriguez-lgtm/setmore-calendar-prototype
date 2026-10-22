@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { KitProvider, KitToggle, useKit } from "../kit";
+import { KitProvider, KitToggle, useKit, useKitName } from "../kit";
+import { NewCalendarApp } from "../new-ui/NewCalendarApp";
 import { CalendarProvider, useCalendar } from "./state/store";
 import { AppNav } from "./shell/AppNav";
 import { CalendarPanel } from "./shell/CalendarPanel";
@@ -20,11 +21,16 @@ export function CalendarApp() {
   return (
     <KitProvider>
       <CalendarProvider>
-        <Shell />
+        <ShellForKit />
         <KitToggle />
       </CalendarProvider>
     </KitProvider>
   );
+}
+
+/** shadcn, EDS and Test share one calendar; New is the separate light-refresh calendar. */
+function ShellForKit() {
+  return useKitName() === "new" ? <NewCalendarApp /> : <Shell />;
 }
 
 /** True below `px` wide. */

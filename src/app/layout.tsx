@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./shadcn.css";
 import "./test-kit.css";
+import "./new-ui.css";
 import { EdsProvider } from "./eds-provider";
 
 export const metadata: Metadata = {
