@@ -116,7 +116,7 @@ const WORK_DAYS = [0, 1, 2, 3, 4]; // Mon–Fri
 
 // Grid math: hour row height. The grid covers all 24 hours but opens scrolled to the working
 // hours (8AM–5PM here) so earlier/later meetings are still reachable by scrolling.
-const HOUR = 80;
+const HOUR = 78;
 const DAY_START = 0;
 const DAY_END = 24;
 const WORK_START = 8;
@@ -239,9 +239,11 @@ function EventCard({ ev, onOpen }: { ev: EventInput; onOpen: (id: string) => voi
   const startDate = useMemo(() => timeOn(dayDate(ev.day), ev.start), [ev]);
   const endDate = useMemo(() => timeOn(dayDate(ev.day), ev.end), [ev]);
   const duration = ev.end - ev.start;
-  const top = (ev.start - DAY_START * 60) * (HOUR / 60);
-  // Minimum card height so the title stays visible on short events (15-minute cards too).
-  const height = Math.max(duration * (HOUR / 60) - 2, 18);
+  // Card sizes from the design: 1h = 72, 30m = 36, 15m = 18 (hour row is 78, so 6px gap).
+  // Centre the card inside its slot so a 1h card sits in the middle of the 78px hour row.
+  const height = Math.max((duration * (HOUR - 6)) / 60, 18);
+  const slot = (duration * HOUR) / 60;
+  const top = (ev.start - DAY_START * 60) * (HOUR / 60) + Math.max((slot - height) / 2, 0);
   // 15-min cards: title only. 30-min: title + time · person. 45+: title + range + optional avatars.
   const veryShort = duration <= 15;
   const short = duration < 60;
@@ -277,10 +279,10 @@ function EventCard({ ev, onOpen }: { ev: EventInput; onOpen: (id: string) => voi
           style={{ top, height }}
         >
           <span aria-hidden className={cn("absolute inset-y-0 left-0 w-[3px]", barClass)} />
-          <span className={cn("flex flex-col gap-0.5 pl-[11px] pr-2", veryShort ? "py-0 justify-center h-full" : short ? "py-1" : "py-1.5")}>
+          <span className={cn("flex flex-col pl-[11px] pr-2", veryShort ? "gap-0 py-0 justify-center h-full" : short ? "gap-0 py-0.5" : "gap-0.5 py-1.5")}>
             <span className="flex items-center gap-1 min-w-0">
               {isMinePrivate && <span aria-label="Private" className="inline-grid place-items-center text-[10px]">🔒</span>}
-              <span className="truncate text-sm font-medium leading-tight">{ev.title}</span>
+              <span className={cn("truncate font-medium", short ? "text-[13px] leading-4" : "text-sm leading-tight")}>{ev.title}</span>
               {(isLive || soon) && ev.meet ? (
                 <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full border border-pal-green-border bg-background px-1.5 py-[1px] text-[11px] font-medium text-pal-green-text">
                   <Video className="h-3 w-3" /> Join
@@ -290,7 +292,7 @@ function EventCard({ ev, onOpen }: { ev: EventInput; onOpen: (id: string) => voi
               ) : null}
             </span>
             {!veryShort && (
-              <span className="text-xs opacity-80 truncate">
+              <span className={cn("truncate opacity-80", short ? "text-[11px] leading-[14px]" : "text-xs")}>
                 {short && duration <= 30
                   ? <>{renderTime(startDate, { hourOnly: true })} · {PEOPLE[ev.guests.find((g) => g !== "ml") ?? ev.guests[0]].first}</>
                   : renderRange(startDate, endDate)}
