@@ -104,18 +104,18 @@ export function Header() {
           )}
         />
         </InlineField>
-        <IconButton aria-label={`Previous ${stepLabel[view]}`} icon={icons.chevronLeft} variant="neutralTertiary" size="small" onClick={() => store.step(-1)} />
-        <IconButton aria-label={`Next ${stepLabel[view]}`} icon={icons.chevronRight} variant="neutralTertiary" size="small" onClick={() => store.step(1)} />
+        <IconButton aria-label={`Previous ${stepLabel[view]}`} icon={icons.chevronLeft} variant="neutralTertiary" size="standard" onClick={() => store.step(-1)} />
+        <IconButton aria-label={`Next ${stepLabel[view]}`} icon={icons.chevronRight} variant="neutralTertiary" size="standard" onClick={() => store.step(1)} />
         <Tooltip content={formatDayShort(now)} placement="bottom">
           {({ triggerProps }) => (
-            <Button {...triggerProps} variant="neutralTertiary" size="small" onClick={store.goToday}>
+            <Button {...triggerProps} variant="neutralTertiary" size="standard" onClick={store.goToday}>
               Today
             </Button>
           )}
         </Tooltip>
       </div>
 
-      <div className="flex shrink-0 items-center gap-0.5">
+      <div className="flex shrink-0 items-center gap-1">
         <ViewMenu />
         <CreateMenu />
         <MoreMenu />
@@ -133,7 +133,7 @@ function ViewMenu() {
     <DropdownMenu popoverPlacement="bottom-end" popoverMaxWidth={220}>
       {({ triggerProps }) => (
         <>
-          <IconButton {...triggerProps} aria-label={`View: ${current.label}`} icon={icons[current.icon]} variant="neutralTertiary" size="small" />
+          <IconButton {...triggerProps} aria-label={`View: ${current.label}`} icon={icons[current.icon]} variant="neutralTertiary" size="standard" />
           <DropdownMenuPopover>
             <DropdownMenuList>
               {views.map((v) => {
@@ -172,7 +172,7 @@ function CreateMenu() {
     <DropdownMenu popoverPlacement="bottom-end">
       {({ triggerProps }) => (
         <>
-          <IconButton {...triggerProps} aria-label="Create" icon={icons.add} variant="neutralTertiary" size="small" />
+          <IconButton {...triggerProps} aria-label="Create" icon={icons.add} variant="neutralTertiary" size="standard" />
           <DropdownMenuPopover>
             <DropdownMenuList>
               <DropdownMenuItem railStart={<icons.createBooking size="16" aria-hidden />} onClick={() => store.openComposer({})}>
@@ -206,7 +206,7 @@ function MoreMenu() {
     <DropdownMenu popoverPlacement="bottom-end" popoverMaxWidth={240}>
       {({ triggerProps }) => (
         <>
-          <IconButton {...triggerProps} aria-label="More options" icon={icons.more} variant="neutralTertiary" size="small" />
+          <IconButton {...triggerProps} aria-label="More options" icon={icons.more} variant="neutralTertiary" size="standard" />
           <DropdownMenuPopover>
             <DropdownMenuList>
               <DropdownMenuItem onClick={() => window.print()}>Print calendar</DropdownMenuItem>
@@ -265,7 +265,7 @@ function ShareMenu() {
     <DropdownMenu popoverPlacement="bottom-end">
       {({ triggerProps }) => (
         <>
-          <Button {...triggerProps} variant="neutralSecondaryIntense" size="small" iconStart={icons.share} className="ml-1.5">
+          <Button {...triggerProps} variant="neutralSecondaryIntense" size="standard" iconStart={icons.share} className="ml-1">
             Share
           </Button>
           <DropdownMenuPopover>

@@ -1,7 +1,8 @@
 "use client";
 
 import type { Kit } from "../types";
-import { shadcnIcons } from "./icons";
+// Same icon set as EDS and live: icons are brand assets, not part of the component library.
+import { edsIcons } from "../../eds/icons";
 import { Avatar, Button, Checkbox, Field, IconButton, InlineField, Loading, Placeholder, SearchInput, TabContent, TabItem, TabList, Tabs, Textarea, TextInput, Toggle } from "./primitives";
 import {
   DropdownMenu,
@@ -22,7 +23,7 @@ import { Calendar, ColorSwatches, Combobox, ComboboxItem, ComboboxListbox, Combo
 export const shadcnKit: Kit = {
   name: "shadcn",
   label: "shadcn",
-  icons: shadcnIcons,
+  icons: edsIcons,
   Button,
   IconButton,
   Avatar,

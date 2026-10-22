@@ -102,7 +102,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
   const [selectedStaff, setSelectedStaff] = useState(ME);
   const [checkedStaff, setCheckedStaff] = useState<string[]>([ME]);
   const [isNavCollapsed, setNavCollapsed] = useState(false);
-  const [isPanelOpen, setPanelOpen] = useState(true);
+  const [isPanelOpen, setPanelOpen] = useState(false);
   const [openOccurrence, setOpenOccurrence] = useState<Store["openOccurrence"]>(null);
   const [composer, setComposer] = useState<Composer | null>(null);
   const [toast, setToast] = useState<string | null>(null);

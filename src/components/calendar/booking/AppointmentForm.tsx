@@ -50,7 +50,7 @@ export function AppointmentForm({ showHeader }: { showHeader: boolean }) {
   const canCreate = draft.tab === "service" ? Boolean(draft.serviceId) : draft.tab === "class" ? Boolean(draft.classId) : true;
 
   return (
-    <div className="flex flex-col gap-3 p-4 pt-3.5">
+    <div className="flex flex-col gap-3 px-4 pb-4 pt-3.5">
       {showHeader && (
         <div className="flex items-center justify-between">
           <h2 className="text-heading-14 font-stronger">{draft.editingId ? "Edit appointment" : "Appointment"}</h2>

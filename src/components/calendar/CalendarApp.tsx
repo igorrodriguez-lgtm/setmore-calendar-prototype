@@ -47,7 +47,7 @@ function Shell() {
     <div className="flex h-screen overflow-hidden bg-canvas text-primary">
       <AppNav isCompact={isCompact} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header data-print-hide className="flex h-10 shrink-0 items-center gap-2 pl-2.5 pr-2">
+        <header data-print-hide className="flex h-[50px] shrink-0 items-center gap-2 pl-2.5 pr-2">
           <div className={store.isPanelOpen ? "w-[150px] shrink-0" : "shrink-0"}>
             <PanelLabel />
           </div>

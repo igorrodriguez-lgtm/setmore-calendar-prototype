@@ -43,7 +43,7 @@ export function KitProvider({ children }: { children: ReactNode }) {
   return (
     <KitContext.Provider value={{ kit: kits[name], setKit }}>
       {children}
-      {name !== "eds" && <Toaster position="bottom-left" />}
+      {name !== "eds" && <Toaster position="bottom-left" offset={16} />}
     </KitContext.Provider>
   );
 }

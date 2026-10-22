@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useCalendar, useVisibleDays, visibleStaffIds, type Anchor } from "../state/store";
 import { ME, services, staffById } from "../model/mock";
 import { expand } from "../model/recurrence";
@@ -11,28 +11,11 @@ import { StaffAvatar } from "../shell/StaffAvatar";
 import { useKit } from "../../kit";
 import { GoogleG } from "../shell/GoogleG";
 
-/** Setmore's hour height at 1280×800. Taller screens get taller hours (see useHourHeight). */
-const MIN_HOUR = 31;
-const MAX_HOUR = 64;
-/** Roughly how many hours should fill the visible grid on a tall screen. */
-const VISIBLE_HOURS = 14;
-const HourHeight = createContext(MIN_HOUR);
-
-/** Hour row height that grows with the grid's visible height, so big screens don't feel cramped. */
-function useHourHeight(scroller: React.RefObject<HTMLDivElement | null>) {
-  const [hour, setHour] = useState(MIN_HOUR);
-  useLayoutEffect(() => {
-    const el = scroller.current;
-    if (!el) return;
-    const measure = () => setHour(Math.round(Math.min(MAX_HOUR, Math.max(MIN_HOUR, el.clientHeight / VISIBLE_HOURS))));
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [scroller]);
-  return hour;
-}
-const GUTTER = 44;
+/** Setmore's hour height (measured on live at 100% zoom). */
+const HOUR = 44;
+const GUTTER = 64;
+/** Space above midnight, so the 12AM label isn't cut off. */
+const TOP = 12;
 const SNAP = 15;
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
@@ -62,7 +45,6 @@ export function TimeGrid() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const colsRef = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
-  const HOUR = useHourHeight(scrollRef);
 
   const columns: Column[] = useMemo(
     () => days.flatMap((date) => staffIds.map((staffId) => ({ key: `${toKey(date)}:${staffId}`, date, staffId }))),
@@ -75,14 +57,14 @@ export function TimeGrid() {
     [events, staffIds, days]
   );
 
-  // Open scrolled to an hour before the working day starts.
+  // Open scrolled like live: the line two hours before the working day sits just below the top.
   useEffect(() => {
     const hours = staffById(staffIds[0] ?? ME)?.workingHours.find(Boolean);
-    const first = hours ? hours.start / 60 - 1 : 7;
-    scrollRef.current?.scrollTo({ top: Math.max(0, first) * HOUR });
+    const first = hours ? hours.start / 60 - 2 : 6;
+    scrollRef.current?.scrollTo({ top: Math.max(0, TOP + first * HOUR - 17) });
     // Only when whose calendar is shown changes, not on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [staffIds.join(","), HOUR]);
+  }, [staffIds.join(",")]);
 
   // Dragging: move in 15-minute steps (and across columns), or resize from the bottom edge.
   useEffect(() => {
@@ -121,7 +103,7 @@ export function TimeGrid() {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
-  }, [drag, occurrences, columns, store, HOUR]);
+  }, [drag, occurrences, columns, store]);
 
   const shown = occurrences.map((o) => (drag?.moved && drag.key === o.key ? { ...o, ...applyDrag(o, drag, columns) } : { ...o, staffId: o.event.staffId }));
   const todayIndex = days.findIndex((d) => isSameDay(d, now));
@@ -149,16 +131,26 @@ export function TimeGrid() {
           </div>
         </div>
       )}
+      {/* Time zone and the all-day strip above the hours, as on live. */}
+      <div className="flex h-[33px] shrink-0 pr-[6px]">
+        <div className="flex shrink-0 items-center justify-end border-b border-calendar pr-[8px] fs-9 font-strong uppercase text-tertiary" style={{ width: GUTTER }}>
+          {timeZoneLabel()}
+        </div>
+        <div className="grid flex-1" style={{ gridTemplateColumns: gridTemplate }}>
+          {columns.map((c) => (
+            <div key={c.key} className="border-l border-tertiary" />
+          ))}
+        </div>
+      </div>
 
       <div ref={scrollRef} className="eds-scroll relative min-h-0 flex-1 overflow-y-auto">
-        <div className="relative flex" style={{ height: HOUR * 24 + 12 }}>
+        <div className="relative flex" style={{ height: HOUR * 24 + TOP }}>
           {/* Hour labels */}
           <div className="relative shrink-0" style={{ width: GUTTER }}>
-            <span className="absolute right-[6px] top-0 fs-9 uppercase text-tertiary">{timeZoneLabel()}</span>
             {HOURS.slice(1).map((hour) => {
               const { hour: label, suffix } = hourLabel(hour);
               return (
-                <span key={hour} className="absolute right-[6px] -translate-y-1/2 fs-10 text-tertiary" style={{ top: 12 + hour * HOUR }}>
+                <span key={hour} className="absolute right-[8px] fs-10 leading-[12px] text-tertiary" style={{ top: TOP + hour * HOUR - 2 }}>
                   {label}
                   <span className="fs-8">{suffix}</span>
                 </span>
@@ -167,15 +159,14 @@ export function TimeGrid() {
             {todayIndex >= 0 && (
               <span
                 className="absolute right-[2px] z-30 -translate-y-1/2 rounded-4px bg-inverse px-[4px] py-[1px] fs-11 font-stronger text-onPrimary"
-                style={{ top: 12 + nowTop }}
+                style={{ top: TOP + nowTop }}
               >
                 {formatClock(nowMinutes(now)).time}
               </span>
             )}
           </div>
 
-          <HourHeight.Provider value={HOUR}>
-          <div ref={colsRef} className={`relative grid flex-1 ${drag?.moved ? "cursor-grabbing select-none" : ""}`} style={{ gridTemplateColumns: gridTemplate, marginTop: 12 }}>
+          <div ref={colsRef} className={`relative grid flex-1 ${drag?.moved ? "cursor-grabbing select-none" : ""}`} style={{ gridTemplateColumns: gridTemplate, marginTop: TOP }}>
             {columns.map((c, ci) => {
               const colOccurrences = shown.filter((o) => o.date === toKey(c.date) && o.staffId === c.staffId);
               const isToday = isSameDay(c.date, now);
@@ -202,7 +193,6 @@ export function TimeGrid() {
               );
             })}
           </div>
-          </HourHeight.Provider>
         </div>
       </div>
     </div>
@@ -223,11 +213,11 @@ function applyDrag(o: Occurrence, drag: Drag, columns: Column[]) {
 function DayHeading({ date, isToday }: { date: Date; isToday: boolean }) {
   const isWeekend = weekdayIndex(date) > 4;
   return (
-    <div className={`flex h-[22px] items-center justify-center gap-[5px] fs-12 ${isWeekend ? "text-tertiary" : "text-primary"}`}>
+    <div className={`flex h-[22px] items-center justify-center gap-[7px] fs-12 ${isWeekend ? "text-tertiary" : "text-primary"}`}>
       <span
         className={
           isToday
-            ? "flex h-[18px] min-w-[18px] items-center justify-center rounded-4px bg-inverse px-[3px] font-stronger text-onPrimary"
+            ? "flex h-5 min-w-5 items-center justify-center rounded-4px bg-inverse px-[3px] font-stronger text-onPrimary"
             : ""
         }
       >
@@ -253,7 +243,6 @@ type ColumnProps = {
 };
 
 function DayColumn({ column, occurrences, isToday, showNow, nowTop, draggingKey, selectedKey, ghost, onSlot, onGrab, onOpen }: ColumnProps) {
-  const HOUR = useContext(HourHeight);
   const hours = staffById(column.staffId)?.workingHours[weekdayIndex(column.date)] ?? null;
   const ghostRef = useRef<HTMLDivElement>(null);
 
@@ -333,7 +322,7 @@ function Clock({ minutes }: { minutes: number }) {
   return (
     <>
       {time}
-      <span className="fs-8">{suffix}</span>
+      <span className="fs-10">{suffix}</span>
     </>
   );
 }
@@ -359,7 +348,7 @@ function EventBlock({
   const LockIcon = icons.lock;
   const VideoIcon = icons.video;
   const { event, start, end } = occurrence;
-  const short = end - start <= 30;
+  const short = end - start < 60;
   const isBusy = !isOwnerView;
   const isGoogle = event.source === "google" && !isBusy;
   const c = event.color;
@@ -375,12 +364,12 @@ function EventBlock({
     return (
       <div
         data-occurrence
-        className="eds-hatch absolute overflow-hidden rounded-4px border border-secondary px-[5px] fs-10 leading-tight text-secondary"
+        className="eds-hatch absolute overflow-hidden rounded-4px border border-secondary px-[5px] fs-12 leading-4 text-secondary"
         style={style}
         title="Busy"
       >
         <div className={`flex items-center gap-[3px] ${short ? "h-full" : "pt-[3px]"}`}>
-          <LockIcon size="16" className="h-[10px] w-[10px] shrink-0" aria-hidden />
+          <LockIcon size="16" className="h-[12px] w-[12px] shrink-0" aria-hidden />
           <span>Busy</span>
           {short && (
             <span className="truncate">
@@ -415,24 +404,24 @@ function EventBlock({
           onOpen(occurrence, rectOf(e.currentTarget));
         }
       }}
-      className={`group absolute cursor-pointer overflow-hidden rounded-4px fs-11 leading-tight ${
+      className={`group absolute cursor-pointer overflow-hidden rounded-4px fs-12 leading-4 ${
         isGoogle
           ? "border border-secondary bg-canvas hover:bg-neutral-hover"
           : "border-l-[3px] border-[color:var(--ev-bar)] bg-[var(--ev-bg)] hover:bg-[var(--ev-bg-hover)]"
       } ${isSelected ? "text-onPrimary" : "text-primary"} ${isDragging ? "opacity-90 shadow-20" : ""}`}
       style={{ ...style, ...palette }}
     >
-      <div className={`flex min-w-0 items-center gap-[3px] px-[5px] ${short ? "h-full" : "pt-[3px]"}`}>
-        <span className="min-w-0 shrink truncate font-stronger">{event.title}</span>
-        {event.video && <VideoIcon size="16" className="h-[11px] w-[11px] shrink-0" aria-hidden />}
-        {short && <span className={`min-w-0 shrink-[3] truncate fs-10 ${isSelected ? "" : "text-secondary"}`}>{subtitle}</span>}
+      <div className={`flex min-w-0 items-center gap-[4px] pl-[5px] ${isGoogle ? "pr-[24px]" : "pr-[5px]"} ${short ? "h-full" : "pt-[3px]"}`}>
+        <span className="min-w-0 shrink truncate font-strong">{event.title}</span>
+        {event.video && <VideoIcon size="16" className="h-[14px] w-[14px] shrink-0" aria-hidden />}
+        {short && <span className={`ml-[2px] min-w-0 shrink-[3] truncate ${isSelected ? "" : "text-secondary"}`}>{subtitle}</span>}
       </div>
       {!short && (
-        <div className={`truncate px-[5px] fs-10 ${isSelected ? "" : "text-secondary"}`}>
+        <div className={`truncate px-[5px] ${isSelected ? "" : "text-secondary"}`}>
           <Clock minutes={start} /> - <Clock minutes={end} />
         </div>
       )}
-      {isGoogle && <GoogleG className="absolute bottom-[3px] right-[4px] h-[10px] w-[10px]" />}
+      {isGoogle && <GoogleG className={`absolute right-[6px] h-[14px] w-[14px] ${short ? "top-1/2 -translate-y-1/2" : "top-[4px]"}`} />}
       <span className="absolute inset-x-0 bottom-0 h-[5px] cursor-ns-resize" aria-hidden />
     </div>
   );

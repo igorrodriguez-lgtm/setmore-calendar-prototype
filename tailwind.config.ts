@@ -18,7 +18,7 @@ const config: Config = {
     // The EDS preset maps every text-[…] class to a colour, and its type scale stops at 8/10/12px.
     // Setmore's calendar grid uses 9 and 11px, so dense grid text uses fs-* instead.
     plugin(({ matchUtilities }) => {
-      matchUtilities({ fs: (value) => ({ fontSize: value }) }, { values: { 8: "8px", 9: "9px", 10: "10px", 11: "11px", 12: "12px", 13: "13px", 15: "15px" } });
+      matchUtilities({ fs: (value) => ({ fontSize: value }) }, { values: { 8: "8px", 9: "9px", 10: "10px", 11: "11px", 12: "12px", 13: "13px", 14: "14px", 15: "15px" } });
     }),
   ],
 };

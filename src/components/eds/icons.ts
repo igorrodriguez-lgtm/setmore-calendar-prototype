@@ -10,16 +10,16 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ClassBookingIcon,
+  ClassIcon,
   ClockIcon,
   ConnectIcon,
   CreateBookingIcon,
   CreateUserIcon,
-  CustomersIcon,
+  CustomerIcon,
   DeleteIcon,
   DuplicateIcon,
   EditIcon,
-  HelpIcon,
+  SupportFilledIcon,
   InformationIcon,
   LinkIcon,
   LocationIcon,
@@ -44,7 +44,7 @@ import {
 } from "@adaptavant/eds-core";
 import type { IconName, KitIcon } from "../kit/types";
 
-// EDS has no graduation-cap icon for Academy; ClassBookingIcon is the closest.
+// The same icons live Setmore uses. All three kits share them, so the screens look identical.
 export const edsIcons = {
   day: CalViewDayIcon,
   week: CalViewWeekIcon,
@@ -68,13 +68,13 @@ export const edsIcons = {
   notes: NotesIcon,
   location: LocationIcon,
   link: LinkIcon,
-  help: HelpIcon,
+  help: SupportFilledIcon,
   settings: SettingsIcon,
   services: ServicesIcon,
   connect: ConnectIcon,
-  customers: CustomersIcon,
+  customers: CustomerIcon,
   updates: UpdatesIcon,
-  academy: ClassBookingIcon,
+  academy: ClassIcon,
   timer: TimerIcon,
   check: CheckIcon,
   search: SearchIcon,

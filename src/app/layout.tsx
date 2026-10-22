@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
+    <html lang="en" className="light">
       <body className="bg-canvas text-primary antialiased">
         <EdsProvider>{children}</EdsProvider>
       </body>
