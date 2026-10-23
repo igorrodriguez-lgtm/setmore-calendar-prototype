@@ -4,6 +4,9 @@ A clickable prototype of the Setmore **Calendar** page light refresh, built from
 components styled with EDS (Setmore brand) tokens. See the full spec and design boards under
 `design/`.
 
+**Live preview:** https://setmore-calendar-prototype.vercel.app/?kit=new
+**Repo:** https://github.com/igorrodriguez-lgtm/setmore-calendar-prototype (branch: `testing`)
+
 ## Run it locally
 
 ```bash
